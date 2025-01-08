@@ -7,4 +7,12 @@
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
+    <ItemGroup>
+      <Folder Include="Game\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="SFML.Net" Version="2.6.0" />
+    </ItemGroup>
+
 </Project>
