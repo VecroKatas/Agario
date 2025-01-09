@@ -1,4 +1,6 @@
-﻿using SFML.Graphics;
+﻿using Agario.Game;
+using Agario.Infrastructure.Factories;
+using SFML.Graphics;
 using SFML.System;
 
 namespace Agario.Infrastructure;
@@ -8,8 +10,12 @@ public class PlayingMap
     public static readonly uint Width = 1800;
     public static readonly uint Height = 900;
 
+    private float playerDefaultRadius = 10;
+    private float foodDefaultRadius = 4;
+
     public List<GameObject> GameObjectsToDisplay;
-    public GameObject ball;
+    public List<GameObject> GameObjectsToUpdate;
+    public List<Food> FoodsOnMap;
 
     private Random _random = new Random();
     
@@ -18,47 +24,84 @@ public class PlayingMap
     public void Initialize()
     {
         GameObjectsToDisplay = new List<GameObject>();
-
-        
-        // realistically init players and food must be in Game part
-        // init players
-        CreatePlayer();
-
-        // init food
+        GameObjectsToUpdate = new List<GameObject>();
+        FoodsOnMap = new List<Food>();
     }
 
     //temp factory method (no its not)
-    public void CreatePlayer()
+    public Player CreatePlayer(bool isPlayer)
     {
-        Shape shape = new CircleShape(20);
+        CircleShape circle = new CircleShape(playerDefaultRadius);
         
-        //move to PlayingMap or Factory of some sort
+        circle.Origin = new Vector2f(playerDefaultRadius, playerDefaultRadius);
+        circle.Position = new Vector2f(900, 450);
+        circle.FillColor = new Color(200, 200, 200);
         
-        shape.Origin = new Vector2f(20, 20);
-        shape.Position = new Vector2f(900, 450);
-        shape.FillColor = new Color(200, 200, 200);
+        Player newPlayer = new Player(circle, circle.Position, isPlayer);
+        
+        GameObjectsToDisplay.Add(newPlayer);
+        GameObjectsToUpdate.Add(newPlayer);
+        FoodsOnMap.Add(newPlayer);
 
-        ball = new GameObject(shape, shape.Position);
-        
-        GameObjectsToDisplay.Add(ball);
+        return newPlayer;
     }
 
-    public void MoveBall(Vector2f moveDirection)
+    public void MovePlayer(Player player, Vector2f moveDirection)
     {
         if (moveDirection.IsZeros())
             return;
-            
-        ball.Move(moveDirection);
-    }
 
-    public void MoveBallRandomly()
-    {
-        ball.Move(new Vector2f(GetRandomFloat(), GetRandomFloat()));
+        Vector2f newPosition = player.CalculateNextWorldPosition(moveDirection);
+        
+        if (!IsWithinHorizontalBorders(player.Shape.Radius, newPosition))
+        {
+            moveDirection.X = 0;
+        }
+        
+        if (!IsWithinVerticalBorders(player.Shape.Radius, newPosition))
+        {
+            moveDirection.Y = 0;
+        }
+        
+        player.Move(moveDirection);
     }
     
-    private float GetRandomFloat()
+    private bool IsWithinHorizontalBorders(float radius, Vector2f newPosition)
+    {
+        return newPosition.X - radius > 0 && newPosition.X + radius < Width;
+    }
+    
+    private bool IsWithinVerticalBorders(float radius, Vector2f newPosition)
+    {
+        return newPosition.Y - radius > 0 && newPosition.Y + radius < Height;
+    }
+
+    public void MovePlayerRandomly(Player player)
+    {
+        MovePlayer(player, new Vector2f(GetRandomMaxAbs1Float(), GetRandomMaxAbs1Float()).Normalise());
+    }
+    
+    private float GetRandomMaxAbs1Float()
     {
         return _random.Next(-100, 101) / 100f;
+    }
+
+    public void CreateFood(int nutritionValue)
+    {
+        Vector2f worldPosition = new Vector2f(MathF.Abs(GetRandomMaxAbs1Float()) * Width, MathF.Abs(GetRandomMaxAbs1Float()) * Height);
+        
+        Food newFood = FoodFactory.CreateFood(foodDefaultRadius, nutritionValue, worldPosition);
+        
+        GameObjectsToDisplay.Add(newFood);
+        FoodsOnMap.Add(newFood);
+
+        newFood.OnBeingEaten += () => DeleteFood(newFood);
+    }
+
+    public void DeleteFood(Food food)
+    {
+        GameObjectsToDisplay.Remove(food);
+        FoodsOnMap.Remove(food);
     }
 
     public void Reset()

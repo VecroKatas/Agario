@@ -15,7 +15,7 @@ public static class Vector2fUtilities
         if (magnitude == 0)
         {
             Console.WriteLine("Cannot normalize a zero vector.");
-            return new Vector2f(1, 0);
+            return new Vector2f(0, 0);
         }
 
         return new Vector2f(vector.X / magnitude, vector.Y / magnitude);

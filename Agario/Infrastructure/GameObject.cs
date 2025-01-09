@@ -5,22 +5,28 @@ namespace Agario.Infrastructure;
 
 public class GameObject
 {
-    public Vector2f WorldPosition { get; private set; }
-    //по хорошому, gameobject не має знати про shape... мабуть?
-    public Shape Shape { get; private set; }
-    private float _moveSpeed = 100;
+    public Vector2f WorldPosition { get; protected set; }
+    public CircleShape Shape { get; protected set; }
 
-    public GameObject(Shape shape, Vector2f worldPosition)
+    protected GameObject() { }
+    
+    public GameObject(CircleShape circle)
     {
-        Shape = shape;
+        Shape = circle;
+    }
+
+    public GameObject(CircleShape circle, Vector2f worldPosition) : this(circle)
+    {
         WorldPosition = worldPosition;
     }
 
-    public void Move(Vector2f direction)
+    public float GetCollisionDepth(GameObject other)
     {
-        WorldPosition += direction * _moveSpeed * Time.DeltaTime;
-        
-        
-        Shape.Position += direction * _moveSpeed * Time.DeltaTime;
+        float distanceSqr = MathF.Sqrt((Shape.Position.X - other.Shape.Position.X) * (Shape.Position.X - other.Shape.Position.X) +
+                         (Shape.Position.Y - other.Shape.Position.Y) * (Shape.Position.Y - other.Shape.Position.Y));
+
+        float radiusSum = Shape.Radius + other.Shape.Radius;
+
+        return distanceSqr - radiusSum;
     }
 }
