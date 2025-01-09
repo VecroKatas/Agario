@@ -107,6 +107,16 @@ public class GameCycle
 
     private void HandleCollisions()
     {
+        // not foreach, because lists are getting modified
+        HandlePlayerFoodCollision();
+        
+        HandlePlayerPlayerCollision();
+
+        HandlePlayerBorderOverlap();
+    }
+
+    private void HandlePlayerFoodCollision()
+    {
         for (int i = 0; i < _agarioGame.Players.Count; i++)
         {
             for (int j = 0; j < _playingMap.FoodsOnMap.Count; j++)
@@ -115,9 +125,6 @@ public class GameCycle
                 Food food = _playingMap.FoodsOnMap[j];
                 
                 if (food.Equals(player))
-                    return;
-
-                if (player.Shape.Radius <= food.Shape.Radius)
                     return;
                 
                 float collisionDepth = player.GetCollisionDepth(food);
@@ -129,11 +136,17 @@ public class GameCycle
                 }
             }
         }
-        
-        foreach (var player in _agarioGame.Players)
+    }
+
+    private void HandlePlayerPlayerCollision()
+    {
+        for (int i = 0; i < _agarioGame.Players.Count; i++)
         {
-            foreach (var food in _playingMap.FoodsOnMap)
+            for (int j = 0; j < _agarioGame.Players.Count; j++)
             {
+                Player player = _agarioGame.Players[i];
+                Player food = _agarioGame.Players[j];
+                
                 if (food.Equals(player))
                     return;
 
@@ -144,14 +157,25 @@ public class GameCycle
 
                 if (collisionDepth < -food.Shape.Radius * AllowedCollisionDepthModifier)
                 {
-                    player.EatFood(food);
+                    player.EatPlayer(food);
+                    i--;
+                    j--;
                 }
             }
+        }
+    }
+
+    private void HandlePlayerBorderOverlap()
+    {
+        foreach (var player in _agarioGame.Players)
+        {
+            _playingMap.HandleOverlapWithBorder(player);
         }
     }
     
     private void Logic()
     {
+        
         _agarioGame.Update();
     }
 

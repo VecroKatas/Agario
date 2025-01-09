@@ -12,7 +12,7 @@ public class Player : Food
     private float _currentMoveSpeed;
 
     private float _minRadius;
-    private float _maxRadius = 500;
+    private float _maxRadius = 250;
     
     public bool IsMainPlayer { get; private set; }
     
@@ -42,6 +42,11 @@ public class Player : Food
         Shape.Origin = new Vector2f(Shape.Radius, Shape.Radius);
         ReduceSpeed(food.Value / 2f);
         food.BeingEaten();
+    }
+
+    public void EatPlayer(Player player)
+    {
+        
     }
 
     private void ReduceSpeed(float valueConsumed)
