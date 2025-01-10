@@ -26,7 +26,7 @@ public static class FoodFactory
 
     public static Food CreateFood(float defaultRadius, int nutritionValue, Vector2f worldPosition)
     {
-        float radius = defaultRadius * .9f + defaultRadius / 10f * nutritionValue;
+        float radius = defaultRadius * .9f + defaultRadius / 5f * nutritionValue;
         
         CircleShape circle = new CircleShape(radius, (uint)nutritionValue + 2);
         

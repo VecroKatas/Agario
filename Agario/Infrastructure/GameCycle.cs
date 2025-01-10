@@ -9,7 +9,7 @@ public class GameCycle
     public const int TARGET_FPS = 120;
     public const float TIME_UNTIL_NEXT_UPDATE = 1f / TARGET_FPS;
 
-    private const float AllowedCollisionDepthModifier = 1.5f;
+    private const float AllowedCollisionDepthModifier = 1f;
     
     private PlayingMap _playingMap;
     private Input _input;
@@ -81,28 +81,31 @@ public class GameCycle
         _input.DispatchEvents();
 
         _mousePosition = _input.GetMousePosition();
-        _mainPlayerMoveDirection = CalculatePlayerMoveDirection();
+        _mainPlayerMoveDirection = _mainPlayer.WorldPosition.CalculatedNormalisedDirection(_mousePosition);
         
         // foreach bot player generate input
-    }
-    
-    private Vector2f CalculatePlayerMoveDirection()
-    {
-        if (_mousePosition.X == -1)
-            return new Vector2f(0, 0);
-
-        Vector2f direction = _mousePosition - _mainPlayer.Shape.Position;
-        return direction.Normalise();
     }
 
     private void Physics()
     {
-        //_playingMap.MoveBallRandomly();
-        _playingMap.MovePlayer(_mainPlayer, _mainPlayerMoveDirection);
-        
-        //MoveAllPlayers
+        MoveAllPlayers();
         
         HandleCollisions();
+    }
+
+    private void MoveAllPlayers()
+    {
+        foreach (var player in _playingMap.PlayersOnMap)
+        {
+            if (player.IsMainPlayer)
+            {
+                _playingMap.MovePlayer(player, _mainPlayerMoveDirection);
+            }
+            else
+            {
+                _playingMap.MovePlayer(player, _agarioGame.GetBotMoveDirection(player));
+            }
+        }
     }
 
     private void HandleCollisions()
@@ -119,20 +122,11 @@ public class GameCycle
     {
         for (int i = 0; i < _playingMap.PlayersOnMap.Count; i++)
         {
-            for (int j = 0; j < _playingMap.FoodsOnMap.Count; j++)
-            {
-                Player player = _playingMap.PlayersOnMap[i];
-                Food food = _playingMap.FoodsOnMap[j];
-                
-                float collisionDepth = player.GetCollisionDepth(food);
+            (Food food, float distance) = _playingMap.GetClosestFoodAndDistance(_playingMap.PlayersOnMap[i]);
 
-                if (collisionDepth < -food.Shape.Radius * AllowedCollisionDepthModifier)
-                {
-                    player.EatFood(food);
-                    
-                    if (j > 0)
-                        j--;
-                }
+            if (distance < -food.Shape.Radius * AllowedCollisionDepthModifier)
+            {
+                _playingMap.PlayersOnMap[i].EatFood(food);
             }
         }
     }
@@ -141,29 +135,17 @@ public class GameCycle
     {
         for (int i = 0; i < _playingMap.PlayersOnMap.Count; i++)
         {
-            for (int j = 0; j < _playingMap.PlayersOnMap.Count; j++)
+            (Player other, float distance) = _playingMap.GetClosestPlayerAndDistance(_playingMap.PlayersOnMap[i]);
+            
+            if (_playingMap.PlayersOnMap[i].Shape.Radius <= other.Shape.Radius)
+                continue;
+            
+            if (distance < -other.Shape.Radius * AllowedCollisionDepthModifier)
             {
-                Player player = _playingMap.PlayersOnMap[i];
-                Player food = _playingMap.PlayersOnMap[j];
-                
-                if (Object.ReferenceEquals(player, food))
-                    continue;
-
-                if (player.Shape.Radius <= food.Shape.Radius)
-                    continue;
-                
-                float collisionDepth = player.GetCollisionDepth(food);
-
-                if (collisionDepth < -food.Shape.Radius * AllowedCollisionDepthModifier)
-                {
-                    player.EatPlayer(food);
+                _playingMap.PlayersOnMap[i].EatPlayer(other);
                     
-                    if (i > 0) 
-                        i--;
-                    
-                    if (j > 0)
-                        j--;
-                }
+                if (i > 0) 
+                    i--;
             }
         }
     }

@@ -22,4 +22,13 @@ public static class Vector2fUtilities
     }
 
     public static bool IsZeros(this Vector2f vector) => vector is {X: 0, Y: 0};
+
+    public static Vector2f CalculatedNormalisedDirection(this Vector2f selfPosition, Vector2f otherPosition)
+    {
+        if (otherPosition.X == -1)
+            return new Vector2f(0, 0);
+
+        Vector2f direction = otherPosition - selfPosition;
+        return direction.Normalise();
+    }
 }

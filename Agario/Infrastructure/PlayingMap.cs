@@ -45,7 +45,12 @@ public class PlayingMap
 
     public void CreateFood(int nutritionValue)
     {
-        Vector2f worldPosition = new Vector2f(MathF.Abs(GetRandomMaxAbs1Float()) * Width, MathF.Abs(GetRandomMaxAbs1Float()) * Height);
+        Vector2f worldPosition = new Vector2f(MathF.Abs(GetRandomMaxAbs1Float()) * Width * .99f, MathF.Abs(GetRandomMaxAbs1Float()) * Height * .99f);
+
+        if (worldPosition.X < foodDefaultRadius)
+            worldPosition.X = Width * .99f;
+        if (worldPosition.Y < foodDefaultRadius)
+            worldPosition.Y = Height * .99f;
         
         Food newFood = FoodFactory.CreateFood(foodDefaultRadius, nutritionValue, worldPosition);
         
@@ -103,15 +108,66 @@ public class PlayingMap
     {
         return newPosition.Y - radius > 0 && newPosition.Y + radius < Height;
     }
-
-    public void MovePlayerRandomly(Player player)
-    {
-        MovePlayer(player, new Vector2f(GetRandomMaxAbs1Float(), GetRandomMaxAbs1Float()).Normalise());
-    }
     
     private float GetRandomMaxAbs1Float()
     {
         return _random.Next(-100, 101) / 100f;
+    }
+
+    public (Food, float) GetClosestFoodAndDistance(Player player)
+    {
+        Food closestFood = null;
+        float closestDistance = float.MaxValue;
+            
+        for (int j = 0; j < FoodsOnMap.Count; j++)
+        {
+            Food food = FoodsOnMap[j];
+                
+            float collisionDepth = player.GetCollisionDepth(food);
+
+            if (collisionDepth < closestDistance)
+            {
+                closestDistance = collisionDepth;
+                closestFood = food;
+            }
+
+            if (closestDistance < 0)
+            {
+                return (closestFood, closestDistance);
+            }
+        }
+
+        return (closestFood, closestDistance);
+    }
+    
+    public (Player, float) GetClosestPlayerAndDistance(Player player)
+    {
+        Player closestPlayer = null;
+        float closestDistance = float.MaxValue;
+            
+        for (int j = 0; j < PlayersOnMap.Count; j++)
+        {
+            Player other = PlayersOnMap[j];
+            
+            // Check the same player
+            if (Object.ReferenceEquals(player, other))
+                continue;
+                
+            float collisionDepth = player.GetCollisionDepth(other);
+
+            if (collisionDepth < closestDistance)
+            {
+                closestDistance = collisionDepth;
+                closestPlayer = other;
+            }
+
+            if (closestDistance < 0)
+            {
+                return (closestPlayer, closestDistance);
+            }
+        }
+
+        return (closestPlayer, closestDistance);
     }
 
     private void DeleteFood(Food food)

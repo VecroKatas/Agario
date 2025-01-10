@@ -1,4 +1,5 @@
-﻿using Agario.Infrastructure;
+﻿using System.IO.Pipes;
+using Agario.Infrastructure;
 using SFML.Graphics;
 using SFML.System;
 using Time = Agario.Infrastructure.Time;
@@ -7,8 +8,10 @@ namespace Agario.Game;
 
 public class Player : Food
 {
-    private float _maxMoveSpeed = 300;
-    private float _minMoveSpeed = 50;
+    private float consumedFoodValueModifier = 1 / 4f;
+    
+    private float _maxMoveSpeed = 200;
+    private float _minMoveSpeed = 20;
     private float _currentMoveSpeed;
 
     private float _minRadius;
@@ -38,26 +41,29 @@ public class Player : Food
 
     public void EatFood(Food food)
     {
-        Shape.Radius += food.Value / 2f;
+        Shape.Radius += food.NutritionValue * consumedFoodValueModifier;
         Shape.Origin = new Vector2f(Shape.Radius, Shape.Radius);
-        Value = Shape.Radius;
-        ReduceSpeed(food.Value / 2f);
+        NutritionValue = Shape.Radius;
+        ReduceSpeed(food.NutritionValue * consumedFoodValueModifier);
         food.BeingEaten();
     }
 
     public void EatPlayer(Player player)
     {
-        Shape.Radius += player.Value / 2f;
+        Shape.Radius += player.NutritionValue * consumedFoodValueModifier;
         Shape.Origin = new Vector2f(Shape.Radius, Shape.Radius);
-        Value = Shape.Radius;
-        ReduceSpeed(player.Value / 2f);
+        NutritionValue = Shape.Radius;
+        ReduceSpeed(player.NutritionValue * consumedFoodValueModifier);
         player.BeingEaten();
     }
 
     private void ReduceSpeed(float valueConsumed)
     {
         float difference = valueConsumed / (_maxRadius - _minRadius);
-
+        
         _currentMoveSpeed -= difference * (_maxMoveSpeed - _minMoveSpeed);
+
+        if (_currentMoveSpeed < _minMoveSpeed)
+            _currentMoveSpeed = _minMoveSpeed;
     }
 }
