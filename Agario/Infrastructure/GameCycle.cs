@@ -9,7 +9,7 @@ public class GameCycle
     public const int TARGET_FPS = 120;
     public const float TIME_UNTIL_NEXT_UPDATE = 1f / TARGET_FPS;
 
-    private const float AllowedCollisionDepthModifier = 0.7f;
+    private const float AllowedCollisionDepthModifier = 1.5f;
     
     private PlayingMap _playingMap;
     private Input _input;
@@ -117,22 +117,21 @@ public class GameCycle
 
     private void HandlePlayerFoodCollision()
     {
-        for (int i = 0; i < _agarioGame.Players.Count; i++)
+        for (int i = 0; i < _playingMap.PlayersOnMap.Count; i++)
         {
             for (int j = 0; j < _playingMap.FoodsOnMap.Count; j++)
             {
-                Player player = _agarioGame.Players[i];
+                Player player = _playingMap.PlayersOnMap[i];
                 Food food = _playingMap.FoodsOnMap[j];
-                
-                if (food.Equals(player))
-                    return;
                 
                 float collisionDepth = player.GetCollisionDepth(food);
 
                 if (collisionDepth < -food.Shape.Radius * AllowedCollisionDepthModifier)
                 {
                     player.EatFood(food);
-                    j--;
+                    
+                    if (j > 0)
+                        j--;
                 }
             }
         }
@@ -140,26 +139,30 @@ public class GameCycle
 
     private void HandlePlayerPlayerCollision()
     {
-        for (int i = 0; i < _agarioGame.Players.Count; i++)
+        for (int i = 0; i < _playingMap.PlayersOnMap.Count; i++)
         {
-            for (int j = 0; j < _agarioGame.Players.Count; j++)
+            for (int j = 0; j < _playingMap.PlayersOnMap.Count; j++)
             {
-                Player player = _agarioGame.Players[i];
-                Player food = _agarioGame.Players[j];
+                Player player = _playingMap.PlayersOnMap[i];
+                Player food = _playingMap.PlayersOnMap[j];
                 
-                if (food.Equals(player))
-                    return;
+                if (Object.ReferenceEquals(player, food))
+                    continue;
 
                 if (player.Shape.Radius <= food.Shape.Radius)
-                    return;
+                    continue;
                 
                 float collisionDepth = player.GetCollisionDepth(food);
 
                 if (collisionDepth < -food.Shape.Radius * AllowedCollisionDepthModifier)
                 {
                     player.EatPlayer(food);
-                    i--;
-                    j--;
+                    
+                    if (i > 0) 
+                        i--;
+                    
+                    if (j > 0)
+                        j--;
                 }
             }
         }
@@ -167,10 +170,7 @@ public class GameCycle
 
     private void HandlePlayerBorderOverlap()
     {
-        foreach (var player in _agarioGame.Players)
-        {
-            _playingMap.HandleOverlapWithBorder(player);
-        }
+        _playingMap.HandlePlayersOverlapWithBorder();
     }
     
     private void Logic()

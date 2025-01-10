@@ -7,8 +7,7 @@ namespace Agario.Game;
 
 public class Food : GameObject
 {
-    public int Value { get; private set; }
-    public bool ToBeEaten;
+    public float Value { get; protected set; }
     public Action OnBeingEaten;
 
     public Food(CircleShape circle, int nutritionalValue) : base(circle)
@@ -18,14 +17,13 @@ public class Food : GameObject
     
     public Food(CircleShape circle, Vector2f worldPosition) : base(circle, worldPosition) { }
     
-    public Food(CircleShape circle, Vector2f worldPosition, int nutritionalValue) : base(circle, worldPosition)
+    public Food(CircleShape circle, Vector2f worldPosition, float nutritionalValue) : base(circle, worldPosition)
     {
         Value = nutritionalValue;
     }
 
     public void BeingEaten()
     {
-        FoodFactory.FoodsCreated.Remove(this);
         OnBeingEaten.Invoke();
     }
 }

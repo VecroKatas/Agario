@@ -14,7 +14,7 @@ public class PlayingMap
     private float foodDefaultRadius = 4;
 
     public List<GameObject> GameObjectsToDisplay;
-    public List<Player> PlayersToUpdate;
+    public List<Player> PlayersOnMap;
     public List<Food> FoodsOnMap;
 
     private Random _random = new Random();
@@ -24,43 +24,54 @@ public class PlayingMap
     public void Initialize()
     {
         GameObjectsToDisplay = new List<GameObject>();
-        PlayersToUpdate = new List<Player>();
+        PlayersOnMap = new List<Player>();
         FoodsOnMap = new List<Food>();
     }
 
     // factory method
-    public Player CreatePlayer(bool isPlayer)
+    public Player CreatePlayer(bool isMainPlayer)
     {
-        CircleShape circle = new CircleShape(playerDefaultRadius);
+        Vector2f worldPosition = new Vector2f(MathF.Abs(GetRandomMaxAbs1Float()) * Width, MathF.Abs(GetRandomMaxAbs1Float()) * Height);
         
-        circle.Origin = new Vector2f(playerDefaultRadius, playerDefaultRadius);
-        circle.Position = new Vector2f(900, 450);
-        circle.FillColor = new Color(200, 200, 200);
-        
-        Player newPlayer = new Player(circle, circle.Position, isPlayer);
+        Player newPlayer = PlayerFactory.CreatePlayer(isMainPlayer, playerDefaultRadius, worldPosition);
         
         GameObjectsToDisplay.Add(newPlayer);
-        PlayersToUpdate.Add(newPlayer);
+        PlayersOnMap.Add(newPlayer);
 
         newPlayer.OnBeingEaten += () => DeletePlayer(newPlayer);
 
         return newPlayer;
     }
 
-    public void HandleOverlapWithBorder(Player player)
+    public void CreateFood(int nutritionValue)
     {
-        Vector2f moveOutDirection = new Vector2f(0, 0);
-        if (player.WorldPosition.X - player.Shape.Radius < 0)
-            moveOutDirection.X = 1;
-        else if (player.WorldPosition.X + player.Shape.Radius > Width)
-            moveOutDirection.X = -1;
+        Vector2f worldPosition = new Vector2f(MathF.Abs(GetRandomMaxAbs1Float()) * Width, MathF.Abs(GetRandomMaxAbs1Float()) * Height);
         
-        if (player.WorldPosition.Y - player.Shape.Radius < 0)
-            moveOutDirection.Y = 1;
-        else if (player.WorldPosition.Y + player.Shape.Radius > Height)
-            moveOutDirection.Y = -1;
+        Food newFood = FoodFactory.CreateFood(foodDefaultRadius, nutritionValue, worldPosition);
         
-        player.Move(moveOutDirection);
+        GameObjectsToDisplay.Add(newFood);
+        FoodsOnMap.Add(newFood);
+
+        newFood.OnBeingEaten += () => DeleteFood(newFood);
+    }
+
+    public void HandlePlayersOverlapWithBorder()
+    {
+        foreach (var player in PlayersOnMap)
+        {
+            Vector2f moveOutDirection = new Vector2f(0, 0);
+            if (player.WorldPosition.X - player.Shape.Radius < 0)
+                moveOutDirection.X = 1;
+            else if (player.WorldPosition.X + player.Shape.Radius > Width)
+                moveOutDirection.X = -1;
+        
+            if (player.WorldPosition.Y - player.Shape.Radius < 0)
+                moveOutDirection.Y = 1;
+            else if (player.WorldPosition.Y + player.Shape.Radius > Height)
+                moveOutDirection.Y = -1;
+        
+            player.Move(moveOutDirection);
+        }
     }
 
     public void MovePlayer(Player player, Vector2f moveDirection)
@@ -103,18 +114,6 @@ public class PlayingMap
         return _random.Next(-100, 101) / 100f;
     }
 
-    public void CreateFood(int nutritionValue)
-    {
-        Vector2f worldPosition = new Vector2f(MathF.Abs(GetRandomMaxAbs1Float()) * Width, MathF.Abs(GetRandomMaxAbs1Float()) * Height);
-        
-        Food newFood = FoodFactory.CreateFood(foodDefaultRadius, nutritionValue, worldPosition);
-        
-        GameObjectsToDisplay.Add(newFood);
-        FoodsOnMap.Add(newFood);
-
-        newFood.OnBeingEaten += () => DeleteFood(newFood);
-    }
-
     private void DeleteFood(Food food)
     {
         GameObjectsToDisplay.Remove(food);
@@ -124,7 +123,7 @@ public class PlayingMap
     private void DeletePlayer(Player player)
     {
         GameObjectsToDisplay.Remove(player);
-        PlayersToUpdate.Remove(player);
+        PlayersOnMap.Remove(player);
     }
 
     public void Reset()

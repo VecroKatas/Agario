@@ -24,8 +24,6 @@ public static class FoodFactory
         {FoodColor.Purple, new Color(128, 0, 128)},
     };
 
-    public static List<Food> FoodsCreated { get; private set; } = new List<Food>();
-
     public static Food CreateFood(float defaultRadius, int nutritionValue, Vector2f worldPosition)
     {
         float radius = defaultRadius * .9f + defaultRadius / 10f * nutritionValue;
@@ -36,9 +34,7 @@ public static class FoodFactory
         circle.Position = worldPosition;
         circle.FillColor = FoodColors[(FoodColor)nutritionValue];
 
-        Food newFood = new Food(circle, worldPosition, nutritionValue); 
-        
-        FoodsCreated.Add(newFood);
+        Food newFood = new Food(circle, worldPosition, nutritionValue);
         
         return newFood;
     }

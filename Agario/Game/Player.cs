@@ -40,13 +40,18 @@ public class Player : Food
     {
         Shape.Radius += food.Value / 2f;
         Shape.Origin = new Vector2f(Shape.Radius, Shape.Radius);
+        Value = Shape.Radius;
         ReduceSpeed(food.Value / 2f);
         food.BeingEaten();
     }
 
     public void EatPlayer(Player player)
     {
-        
+        Shape.Radius += player.Value / 2f;
+        Shape.Origin = new Vector2f(Shape.Radius, Shape.Radius);
+        Value = Shape.Radius;
+        ReduceSpeed(player.Value / 2f);
+        player.BeingEaten();
     }
 
     private void ReduceSpeed(float valueConsumed)

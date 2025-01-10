@@ -7,11 +7,11 @@ public class AgarioGame
 {
     //new foods arent eatable
     public const int MAX_FOOD_AMOUNT = 200;
+    public const int MAX_PLAYERS_AMOUNT = 10;
     
     private PlayingMap _playingMap;
 
-    public Player MainPlayer { get; private set; }
-    public List<Player> Players { get; private set; }
+    public Player MainPlayer { get; private set; } = null;
 
     private Random _random = new Random();
 
@@ -22,21 +22,24 @@ public class AgarioGame
 
     public void Initialize()
     {
-        Players = new List<Player>();
-        
-        GenerateFood();
         GeneratePlayers();
+        GenerateFood();
     }
     
     public void GeneratePlayers()
     {
-        MainPlayer = _playingMap.CreatePlayer(true);
-        Players.Add(MainPlayer);
+        if (MainPlayer == null)
+            MainPlayer = _playingMap.CreatePlayer(true);
+        
+        while (_playingMap.PlayersOnMap.Count < MAX_PLAYERS_AMOUNT)
+        {
+            _playingMap.CreatePlayer(false);
+        }
     }
 
     private void GenerateFood()
     {
-        while (FoodFactory.FoodsCreated.Count < MAX_FOOD_AMOUNT)
+        while (_playingMap.FoodsOnMap.Count < MAX_FOOD_AMOUNT)
         {
             _playingMap.CreateFood(_random.Next(1, Enum.GetNames(typeof(FoodColor)).Length));
         }
@@ -44,7 +47,7 @@ public class AgarioGame
 
     public void Update()
     {
-        //GeneratePlayers();
+        GeneratePlayers();
         GenerateFood();
     }
 }

@@ -32,7 +32,10 @@ public class Output
     {
         _renderWindow.Clear(new Color(20, 20, 20));
 
-        foreach (var gameObject in _playingMap.GameObjectsToDisplay)
+        List<GameObject> objectsToDisplay = new List<GameObject>(_playingMap.GameObjectsToDisplay);
+        objectsToDisplay.Reverse();
+        
+        foreach (var gameObject in objectsToDisplay)
         {
             _renderWindow.Draw(gameObject.Shape);
         }
