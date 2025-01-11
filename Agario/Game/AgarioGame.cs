@@ -6,9 +6,8 @@ namespace Agario.Game;
 
 public class AgarioGame
 {
-    //new foods arent eatable
-    public const int MAX_FOOD_AMOUNT = 200;
-    public const int MAX_PLAYERS_AMOUNT = 10;
+    private const int MAX_FOOD_AMOUNT = 200;
+    private const int MAX_PLAYERS_AMOUNT = 10;
     
     private PlayingMap _playingMap;
 

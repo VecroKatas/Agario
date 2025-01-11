@@ -9,8 +9,13 @@ public class GameCycle
     public const int TARGET_FPS = 120;
     public const float TIME_UNTIL_NEXT_UPDATE = 1f / TARGET_FPS;
 
+    private const float SecondsAfterGameOver = 4f;
+
+    private bool _isPlayerAlive = true;
+
     private const float AllowedCollisionDepthModifier = 1f;
     
+    private RenderWindow _renderWindow;
     private PlayingMap _playingMap;
     private Input _input;
     private Output _output;
@@ -24,6 +29,12 @@ public class GameCycle
     
     public GameCycle(RenderWindow renderWindow)
     {
+        InitFields(renderWindow);
+    }
+
+    private void InitFields(RenderWindow renderWindow)
+    {
+        _renderWindow = renderWindow;
         _playingMap = new PlayingMap();
         _input = new Input(renderWindow);
         _output = new Output(_playingMap, renderWindow);
@@ -39,6 +50,8 @@ public class GameCycle
     
     private void Initialization()
     {
+        _isPlayerAlive = true;
+        
         _playingMap.Initialize();
         
         _output.Initialize();
@@ -46,6 +59,7 @@ public class GameCycle
         _agarioGame.Initialize();
 
         _mainPlayer = _agarioGame.MainPlayer;
+        _mainPlayer.OnBeingEaten += GameOver;
 
         Time.Start();
     }
@@ -69,11 +83,28 @@ public class GameCycle
                 Output();
             }
         }
+        
+        // this should instead be a different class/scene, but i dont have time
+        float _restartTimePassed = 0;
+        while (_restartTimePassed < SecondsAfterGameOver)
+        {
+            Time.Update();
+            
+            if (Time.IsNextUpdate())
+            {
+                _output.DisplayGameOverScreen(SecondsAfterGameOver - _restartTimePassed, _mainPlayer);
+                
+                Time.UpdateDeltaTime();
+                _restartTimePassed += Time.DeltaTime;
+            }
+        }
+        
+        ResetGame();
     }
 
     private bool GameRunning()
     {
-        return _output.IsWindowOpen();
+        return _output.IsWindowOpen() && _isPlayerAlive;
     }
 
     private void Input()
@@ -82,8 +113,6 @@ public class GameCycle
 
         _mousePosition = _input.GetMousePosition();
         _mainPlayerMoveDirection = _mainPlayer.WorldPosition.CalculatedNormalisedDirection(_mousePosition);
-        
-        // foreach bot player generate input
     }
 
     private void Physics()
@@ -110,7 +139,6 @@ public class GameCycle
 
     private void HandleCollisions()
     {
-        // not foreach, because lists are getting modified
         HandlePlayerFoodCollision();
         
         HandlePlayerPlayerCollision();
@@ -157,13 +185,20 @@ public class GameCycle
     
     private void Logic()
     {
-        
         _agarioGame.Update();
     }
 
-    private void ResetMap()
+    private void GameOver()
     {
-        _playingMap.Reset();
+        _playingMap.GameObjectsToDisplay.Clear();
+
+        _isPlayerAlive = false;
+    }
+
+    private void ResetGame()
+    {
+        InitFields(_renderWindow);
+        StartGame();
     }
 
     private void Output()

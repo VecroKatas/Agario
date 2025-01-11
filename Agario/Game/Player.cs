@@ -17,12 +17,17 @@ public class Player : Food
     private float _minRadius;
     private float _maxRadius = 250;
     
+    public int FoodEaten { get; private set; }
+    public int PlayersEaten { get; private set; }
+    
     public bool IsMainPlayer { get; private set; }
     
     public Player(CircleShape circle, Vector2f worldPosition, bool isMainPlayer) : base(circle, worldPosition)
     {
         IsMainPlayer = isMainPlayer;
         _currentMoveSpeed = _maxMoveSpeed;
+        FoodEaten = 0;
+        PlayersEaten = 0;
     }
 
     public Vector2f CalculateNextWorldPosition(Vector2f direction)
@@ -44,6 +49,9 @@ public class Player : Food
         Shape.Radius += food.NutritionValue * consumedFoodValueModifier;
         Shape.Origin = new Vector2f(Shape.Radius, Shape.Radius);
         NutritionValue = Shape.Radius;
+
+        FoodEaten++;
+        
         ReduceSpeed(food.NutritionValue * consumedFoodValueModifier);
         food.BeingEaten();
     }
@@ -53,6 +61,9 @@ public class Player : Food
         Shape.Radius += player.NutritionValue * consumedFoodValueModifier;
         Shape.Origin = new Vector2f(Shape.Radius, Shape.Radius);
         NutritionValue = Shape.Radius;
+
+        PlayersEaten++;
+        
         ReduceSpeed(player.NutritionValue * consumedFoodValueModifier);
         player.BeingEaten();
     }
