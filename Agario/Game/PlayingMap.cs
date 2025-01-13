@@ -1,14 +1,17 @@
-﻿using Agario.Game;
-using Agario.Infrastructure.Factories;
+﻿using Agario.Game.Factories;
+using Agario.Game.Interfaces;
+using Agario.Infrastructure;
 using SFML.Graphics;
 using SFML.System;
 
-namespace Agario.Infrastructure;
+namespace Agario.Game;
 
-public class PlayingMap
+public class PlayingMap : IInitializeable, IPhysicsUpdatable
 {
     public static readonly uint Width = 1800;
     public static readonly uint Height = 900;
+    
+    private const float AllowedCollisionDepthModifier = 1f;
 
     private float playerDefaultRadius = 10;
     private float foodDefaultRadius = 4;
@@ -19,13 +22,23 @@ public class PlayingMap
 
     private Random _random = new Random();
     
-    public PlayingMap() { }
+    public PlayingMap() 
+    { 
+        GameCycle.GetInstance().RegisterObjectToInitialize(this);
+        GameCycle.GetInstance().RegisterObjectToPhysicsUpdate(this);
+    }
 
     public void Initialize()
     {
+        
         GameObjectsToDisplay = new List<GameObject>();
         PlayersOnMap = new List<Player>();
         FoodsOnMap = new List<Food>();
+    }
+
+    public void PhysicsUpdate()
+    {
+        HandleCollisions();
     }
 
     // factory method
@@ -59,8 +72,49 @@ public class PlayingMap
 
         newFood.OnBeingEaten += () => DeleteFood(newFood);
     }
+    
+    private void HandleCollisions()
+    {
+        HandlePlayerFoodCollision();
+        
+        HandlePlayerPlayerCollision();
 
-    public void HandlePlayersOverlapWithBorder()
+        HandlePlayersOverlapWithBorder();
+    }
+
+    private void HandlePlayerFoodCollision()
+    {
+        for (int i = 0; i < PlayersOnMap.Count; i++)
+        {
+            (Food food, float distance) = GetClosestFoodAndDistance(PlayersOnMap[i]);
+
+            if (distance < -food.Shape.Radius * AllowedCollisionDepthModifier)
+            {
+                PlayersOnMap[i].EatFood(food);
+            }
+        }
+    }
+
+    private void HandlePlayerPlayerCollision()
+    {
+        for (int i = 0; i < PlayersOnMap.Count; i++)
+        {
+            (Player other, float distance) = GetClosestPlayerAndDistance(PlayersOnMap[i]);
+            
+            if (PlayersOnMap[i].Shape.Radius <= other.Shape.Radius)
+                continue;
+            
+            if (distance < -other.Shape.Radius * AllowedCollisionDepthModifier)
+            {
+                PlayersOnMap[i].EatPlayer(other);
+                    
+                if (i > 0) 
+                    i--;
+            }
+        }
+    }
+
+    private void HandlePlayersOverlapWithBorder()
     {
         foreach (var player in PlayersOnMap)
         {

@@ -1,10 +1,16 @@
-﻿using SFML.Graphics;
+﻿using Agario.Game.Interfaces;
+using SFML.Graphics;
 using SFML.System;
 using SFML.Window;
 
 namespace Agario.Infrastructure;
 
-public class Input
+public struct InputEvents
+{
+    public Vector2f MousePosition;
+}
+
+public class Input : IInitializeable
 {
     private RenderWindow _renderWindow;
 
@@ -12,17 +18,24 @@ public class Input
     {
         _renderWindow = renderWindow;
     }
+    
+    public void Initialize(){}
 
     public void DispatchEvents()
     {
         _renderWindow.DispatchEvents();
     }
 
-    public Vector2f GetMousePosition()
+    public InputEvents GetInputEvents()
     {
-        if (Mouse.IsButtonPressed(Mouse.Button.Left))
-            return Mouse.GetPosition(_renderWindow).ConvertIntoVector2f();
+        return new InputEvents()
+        {
+            MousePosition = GetMousePosition()
+        };
+    }
 
-        return new Vector2f(-1, -1);
+    private Vector2f GetMousePosition()
+    {
+        return Mouse.GetPosition(_renderWindow).ConvertIntoVector2f();
     }
 }

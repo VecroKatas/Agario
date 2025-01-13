@@ -1,4 +1,5 @@
-﻿using SFML.Graphics;
+﻿using Agario.Game;
+using SFML.Graphics;
 using SFML.Window;
 
 namespace Agario.Infrastructure;
@@ -14,7 +15,8 @@ public class Boot
 
     public void StartGame()
     {
-        GameCycle game = new GameCycle(_renderWindow);
-        game.StartGame();
+        GameCycle gameCycleInstance = GameCycle.GetInstance();
+        gameCycleInstance.Init(_renderWindow, new AgarioGame());
+        gameCycleInstance.StartGameCycle();
     }
 }

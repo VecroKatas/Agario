@@ -1,23 +1,36 @@
 ﻿using Agario.Infrastructure;
-using Agario.Infrastructure.Factories;
+using Agario.Game.Factories;
+using Agario.Game.Interfaces;
 using SFML.System;
 
 namespace Agario.Game;
 
-public class AgarioGame
+public class AgarioGame : IGameRules
 {
     private const int MAX_FOOD_AMOUNT = 200;
     private const int MAX_PLAYERS_AMOUNT = 10;
     
-    private PlayingMap _playingMap;
-
+    private const float SecondsAfterGameOver = 4f;
+    
+    private Random _random = new Random();
+    
+    public PlayingMap PlayingMap { get; private set; }
+    
     public Player MainPlayer { get; private set; } = null;
 
-    private Random _random = new Random();
-
-    public AgarioGame(PlayingMap playingMap)
+    public Action GameOver { get; set; }
+    
+    private Vector2f _mousePosition;
+    private Vector2f _mainPlayerMoveDirection;
+    
+    public AgarioGame()
     {
-        _playingMap = playingMap;
+        PlayingMap = new PlayingMap();
+        
+        // Мабуть це виконується в MonoBehaviour
+        GameCycle.GetInstance().RegisterObjectToInitialize(this);
+        GameCycle.GetInstance().RegisterObjectToPhysicsUpdate(this);
+        GameCycle.GetInstance().RegisterObjectToUpdate(this);
     }
 
     public void Initialize()
@@ -25,36 +38,64 @@ public class AgarioGame
         GeneratePlayers();
         GenerateFood();
     }
-    
-    public void GeneratePlayers()
+
+    public void Start()
     {
-        if (MainPlayer == null)
-            MainPlayer = _playingMap.CreatePlayer(true);
         
-        while (_playingMap.PlayersOnMap.Count < MAX_PLAYERS_AMOUNT)
-        {
-            _playingMap.CreatePlayer(false);
-        }
     }
 
-    private void GenerateFood()
+    public void PhysicsUpdate()
     {
-        while (_playingMap.FoodsOnMap.Count < MAX_FOOD_AMOUNT)
-        {
-            _playingMap.CreateFood(_random.Next(1, Enum.GetNames(typeof(FoodColor)).Length));
-        }
+        _mousePosition = GameCycle.GetInstance().InputEvents.MousePosition;
+        _mainPlayerMoveDirection = MainPlayer.WorldPosition.CalculatedNormalisedDirection(_mousePosition);
+        
+        MoveAllPlayers();
     }
-
+    
     public void Update()
     {
         GeneratePlayers();
         GenerateFood();
     }
-
-    public Vector2f GetBotMoveDirection(Player bot)
+    
+    private void GeneratePlayers()
     {
-        (Food closestFood, float foodDistance) = _playingMap.GetClosestFoodAndDistance(bot);
-        (Player closestPlayer, float playerDistance) = _playingMap.GetClosestPlayerAndDistance(bot);
+        if (MainPlayer == null)
+            MainPlayer = PlayingMap.CreatePlayer(true);
+        
+        while (PlayingMap.PlayersOnMap.Count < MAX_PLAYERS_AMOUNT)
+        {
+            PlayingMap.CreatePlayer(false);
+        }
+    }
+
+    private void GenerateFood()
+    {
+        while (PlayingMap.FoodsOnMap.Count < MAX_FOOD_AMOUNT)
+        {
+            PlayingMap.CreateFood(_random.Next(1, Enum.GetNames(typeof(FoodColor)).Length));
+        }
+    }
+    
+    private void MoveAllPlayers()
+    {
+        foreach (var player in PlayingMap.PlayersOnMap)
+        {
+            if (player.IsMainPlayer)
+            {
+                PlayingMap.MovePlayer(player, _mainPlayerMoveDirection);
+            }
+            else
+            {
+                PlayingMap.MovePlayer(player, GetBotMoveDirection(player));
+            }
+        }
+    }
+
+    private Vector2f GetBotMoveDirection(Player bot)
+    {
+        (Food closestFood, float foodDistance) = PlayingMap.GetClosestFoodAndDistance(bot);
+        (Player closestPlayer, float playerDistance) = PlayingMap.GetClosestPlayerAndDistance(bot);
         
         Vector2f closestFoodDirection = bot.WorldPosition.CalculatedNormalisedDirection(closestFood.WorldPosition);
         Vector2f closestPlayerDirection = bot.WorldPosition.CalculatedNormalisedDirection(closestPlayer.WorldPosition);

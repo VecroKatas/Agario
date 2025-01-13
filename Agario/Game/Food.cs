@@ -1,5 +1,5 @@
 ﻿using Agario.Infrastructure;
-using Agario.Infrastructure.Factories;
+using Agario.Game.Factories;
 using SFML.Graphics;
 using SFML.System;
 

@@ -1,8 +1,7 @@
-﻿using Agario.Game;
-using SFML.Graphics;
+﻿using SFML.Graphics;
 using SFML.System;
 
-namespace Agario.Infrastructure.Factories;
+namespace Agario.Game.Factories;
 
 public enum FoodColor
 {

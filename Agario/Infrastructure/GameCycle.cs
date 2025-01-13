@@ -1,4 +1,5 @@
 ﻿using Agario.Game;
+using Agario.Game.Interfaces;
 using SFML.Graphics;
 using SFML.System;
 
@@ -9,39 +10,71 @@ public class GameCycle
     public const int TARGET_FPS = 120;
     public const float TIME_UNTIL_NEXT_UPDATE = 1f / TARGET_FPS;
 
-    private const float SecondsAfterGameOver = 4f;
+    public InputEvents InputEvents;
+
+    private IGameRules _gameRules;
 
     private bool _isPlayerAlive = true;
 
-    private const float AllowedCollisionDepthModifier = 1f;
+    private List<IInitializeable> ObjectsToInitialize;
+    private List<IPhysicsUpdatable> ObjectsToPhysicsUpdate;
+    private List<IUpdatable> ObjectsToUpdate;
     
     private RenderWindow _renderWindow;
-    private PlayingMap _playingMap;
     private Input _input;
     private Output _output;
-    private AgarioGame _agarioGame;
 
-    private Player _mainPlayer;
-
-    // later move somewhere??
-    private Vector2f _mousePosition;
-    private Vector2f _mainPlayerMoveDirection;
+    private static GameCycle _instance;
     
-    public GameCycle(RenderWindow renderWindow)
+    private GameCycle() 
     {
-        InitFields(renderWindow);
+        ObjectsToInitialize = new List<IInitializeable>();
+        ObjectsToPhysicsUpdate = new List<IPhysicsUpdatable>();
+        ObjectsToUpdate = new List<IUpdatable>();
     }
 
-    private void InitFields(RenderWindow renderWindow)
+    public static GameCycle GetInstance()
+    {
+        if (_instance == null)
+        {
+            _instance = new GameCycle();
+        }
+        return _instance;
+    }
+    
+    public void RegisterObjectToInitialize(IInitializeable obj)
+    {
+        if (ObjectsToInitialize.Contains(obj))
+            return;
+        
+        ObjectsToInitialize.Add(obj);
+    }
+
+    public void RegisterObjectToUpdate(IUpdatable obj)
+    {
+        if (ObjectsToUpdate.Contains(obj))
+            return;
+        
+        ObjectsToUpdate.Add(obj);
+    }
+    
+    public void RegisterObjectToPhysicsUpdate(IPhysicsUpdatable obj)
+    {
+        if (ObjectsToPhysicsUpdate.Contains(obj))
+            return;
+        
+        ObjectsToPhysicsUpdate.Add(obj);
+    }
+
+    public void Init(RenderWindow renderWindow, IGameRules gameRules)
     {
         _renderWindow = renderWindow;
-        _playingMap = new PlayingMap();
         _input = new Input(renderWindow);
-        _output = new Output(_playingMap, renderWindow);
-        _agarioGame = new AgarioGame(_playingMap);
+        _output = new Output(renderWindow);
+        _gameRules = gameRules;
     }
     
-    public void StartGame()
+    public void StartGameCycle()
     {
         Initialization();
 
@@ -50,16 +83,14 @@ public class GameCycle
     
     private void Initialization()
     {
+        foreach (var obj in ObjectsToInitialize)
+        {
+            obj.Initialize();
+        }
+        
         _isPlayerAlive = true;
         
-        _playingMap.Initialize();
-        
-        _output.Initialize();
-        
-        _agarioGame.Initialize();
-
-        _mainPlayer = _agarioGame.MainPlayer;
-        _mainPlayer.OnBeingEaten += GameOver;
+        _gameRules.GameOver += GameOver;
 
         Time.Start();
     }
@@ -84,7 +115,7 @@ public class GameCycle
             }
         }
         
-        // this should instead be a different class/scene, but i dont have time
+        /*// this should instead be a different class/scene, but i dont have time
         float _restartTimePassed = 0;
         while (_restartTimePassed < SecondsAfterGameOver)
         {
@@ -99,7 +130,7 @@ public class GameCycle
             }
         }
         
-        ResetGame();
+        ResetGame();*/
     }
 
     private bool GameRunning()
@@ -110,95 +141,41 @@ public class GameCycle
     private void Input()
     {
         _input.DispatchEvents();
-
-        _mousePosition = _input.GetMousePosition();
-        _mainPlayerMoveDirection = _mainPlayer.WorldPosition.CalculatedNormalisedDirection(_mousePosition);
+        InputEvents = _input.GetInputEvents();
     }
-
+ 
     private void Physics()
     {
-        MoveAllPlayers();
-        
-        HandleCollisions();
-    }
-
-    private void MoveAllPlayers()
-    {
-        foreach (var player in _playingMap.PlayersOnMap)
+        foreach (var obj in ObjectsToPhysicsUpdate)
         {
-            if (player.IsMainPlayer)
-            {
-                _playingMap.MovePlayer(player, _mainPlayerMoveDirection);
-            }
-            else
-            {
-                _playingMap.MovePlayer(player, _agarioGame.GetBotMoveDirection(player));
-            }
+            obj.PhysicsUpdate();
         }
-    }
-
-    private void HandleCollisions()
-    {
-        HandlePlayerFoodCollision();
-        
-        HandlePlayerPlayerCollision();
-
-        HandlePlayerBorderOverlap();
-    }
-
-    private void HandlePlayerFoodCollision()
-    {
-        for (int i = 0; i < _playingMap.PlayersOnMap.Count; i++)
-        {
-            (Food food, float distance) = _playingMap.GetClosestFoodAndDistance(_playingMap.PlayersOnMap[i]);
-
-            if (distance < -food.Shape.Radius * AllowedCollisionDepthModifier)
-            {
-                _playingMap.PlayersOnMap[i].EatFood(food);
-            }
-        }
-    }
-
-    private void HandlePlayerPlayerCollision()
-    {
-        for (int i = 0; i < _playingMap.PlayersOnMap.Count; i++)
-        {
-            (Player other, float distance) = _playingMap.GetClosestPlayerAndDistance(_playingMap.PlayersOnMap[i]);
-            
-            if (_playingMap.PlayersOnMap[i].Shape.Radius <= other.Shape.Radius)
-                continue;
-            
-            if (distance < -other.Shape.Radius * AllowedCollisionDepthModifier)
-            {
-                _playingMap.PlayersOnMap[i].EatPlayer(other);
-                    
-                if (i > 0) 
-                    i--;
-            }
-        }
-    }
-
-    private void HandlePlayerBorderOverlap()
-    {
-        _playingMap.HandlePlayersOverlapWithBorder();
     }
     
     private void Logic()
     {
-        _agarioGame.Update();
+        foreach (var obj in ObjectsToUpdate)
+        {
+            obj.Update();
+        }
     }
 
     private void GameOver()
     {
-        _playingMap.GameObjectsToDisplay.Clear();
+        //PlayingMap.GameObjectsToDisplay.Clear();
 
         _isPlayerAlive = false;
     }
 
-    private void ResetGame()
+    /*private void ResetGame()
     {
-        InitFields(_renderWindow);
+        InitFields(_renderWindow, new AgarioGame(PlayingMap));
         StartGame();
+    }*/
+
+    public List<GameObject> GetGameObjectsToDisplay()
+    {
+        return _gameRules.PlayingMap.GameObjectsToDisplay;
     }
 
     private void Output()

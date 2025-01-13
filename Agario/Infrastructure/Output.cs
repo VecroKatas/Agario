@@ -1,5 +1,6 @@
 ﻿using System.Reflection.Metadata.Ecma335;
 using Agario.Game;
+using Agario.Game.Interfaces;
 using SFML.Graphics;
 using SFML.System;
 
@@ -12,9 +13,8 @@ public struct TextOnDisplay
     public Color Color;
 }
 
-public class Output
+public class Output : IInitializeable
 {
-    private PlayingMap _playingMap;
     private RenderWindow _renderWindow;
 
     private TextOnDisplay gameOverText;
@@ -25,9 +25,8 @@ public class Output
     private string solutionPath;
     private string localFontPath = "\\Fonts\\ARIAL.TTF";
 
-    public Output(PlayingMap playingMap, RenderWindow renderWindow)
+    public Output(RenderWindow renderWindow)
     {
-        _playingMap = playingMap;
         _renderWindow = renderWindow;
     }
 
@@ -74,7 +73,7 @@ public class Output
     {
         _renderWindow.Clear(new Color(20, 20, 20));
 
-        List<GameObject> objectsToDisplay = new List<GameObject>(_playingMap.GameObjectsToDisplay);
+        List<GameObject> objectsToDisplay = new List<GameObject>(GameCycle.GetInstance().GetGameObjectsToDisplay());
         objectsToDisplay.Reverse();
         
         foreach (var gameObject in objectsToDisplay)
