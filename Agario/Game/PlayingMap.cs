@@ -11,7 +11,7 @@ public class PlayingMap : IInitializeable, IPhysicsUpdatable
     public static readonly uint Width = 1800;
     public static readonly uint Height = 900;
     
-    private const float AllowedCollisionDepthModifier = 1f;
+    private const float AllowedCollisionDepthModifierSqr = 3f;
 
     private float playerDefaultRadius = 10;
     private float foodDefaultRadius = 4;
@@ -30,7 +30,6 @@ public class PlayingMap : IInitializeable, IPhysicsUpdatable
 
     public void Initialize()
     {
-        
         GameObjectsToDisplay = new List<GameObject>();
         PlayersOnMap = new List<Player>();
         FoodsOnMap = new List<Food>();
@@ -84,32 +83,29 @@ public class PlayingMap : IInitializeable, IPhysicsUpdatable
 
     private void HandlePlayerFoodCollision()
     {
-        for (int i = 0; i < PlayersOnMap.Count; i++)
+        foreach (var player in PlayersOnMap)
         {
-            (Food food, float distance) = GetClosestFoodAndDistance(PlayersOnMap[i]);
+            (Food food, float distanceSqr) = GetClosestFoodAndDistanceSqr(player);
 
-            if (distance < -food.Shape.Radius * AllowedCollisionDepthModifier)
+            if (distanceSqr < -food.Shape.Radius * food.Shape.Radius * AllowedCollisionDepthModifierSqr)
             {
-                PlayersOnMap[i].EatFood(food);
+                player.EatFood(food);
             }
         }
     }
 
     private void HandlePlayerPlayerCollision()
     {
-        for (int i = 0; i < PlayersOnMap.Count; i++)
+        foreach (var player in new List<Player>(PlayersOnMap))
         {
-            (Player other, float distance) = GetClosestPlayerAndDistance(PlayersOnMap[i]);
+            (Player other, float distanceSqr) = GetClosestPlayerAndDistanceSqr(player);
             
-            if (PlayersOnMap[i].Shape.Radius <= other.Shape.Radius)
+            if (player.Shape.Radius < other.Shape.Radius)
                 continue;
             
-            if (distance < -other.Shape.Radius * AllowedCollisionDepthModifier)
+            if (distanceSqr < -other.Shape.Radius * other.Shape.Radius * AllowedCollisionDepthModifierSqr)
             {
-                PlayersOnMap[i].EatPlayer(other);
-                    
-                if (i > 0) 
-                    i--;
+                player.EatPlayer(other);
             }
         }
     }
@@ -168,72 +164,68 @@ public class PlayingMap : IInitializeable, IPhysicsUpdatable
         return _random.Next(-100, 101) / 100f;
     }
 
-    public (Food, float) GetClosestFoodAndDistance(Player player)
+    public (Food, float) GetClosestFoodAndDistanceSqr(Player player)
     {
         Food closestFood = null;
-        float closestDistance = float.MaxValue;
+        float closestDistanceSqr = float.MaxValue;
             
-        for (int j = 0; j < FoodsOnMap.Count; j++)
+        foreach (var food in FoodsOnMap)
         {
-            Food food = FoodsOnMap[j];
-                
-            float collisionDepth = player.GetCollisionDepth(food);
+            float collisionDepthSqr = player.GetCollisionDepthSqr(food);
 
-            if (collisionDepth < closestDistance)
+            if (collisionDepthSqr < closestDistanceSqr)
             {
-                closestDistance = collisionDepth;
+                closestDistanceSqr = collisionDepthSqr;
                 closestFood = food;
             }
 
-            if (closestDistance < 0)
+            if (closestDistanceSqr < 0)
             {
-                return (closestFood, closestDistance);
+                return (closestFood, closestDistanceSqr);
             }
         }
 
-        return (closestFood, closestDistance);
+        return (closestFood, closestDistanceSqr);
     }
     
-    public (Player, float) GetClosestPlayerAndDistance(Player player)
+    public (Player, float) GetClosestPlayerAndDistanceSqr(Player player)
     {
         Player closestPlayer = null;
-        float closestDistance = float.MaxValue;
+        float closestDistanceSqr = float.MaxValue;
             
-        for (int j = 0; j < PlayersOnMap.Count; j++)
+        foreach (var other in PlayersOnMap)
         {
-            Player other = PlayersOnMap[j];
-            
             // Check the same player
             if (Object.ReferenceEquals(player, other))
                 continue;
                 
-            float collisionDepth = player.GetCollisionDepth(other);
+            float collisionDepthSqr = player.GetCollisionDepthSqr(other);
 
-            if (collisionDepth < closestDistance)
+            if (collisionDepthSqr < closestDistanceSqr)
             {
-                closestDistance = collisionDepth;
+                closestDistanceSqr = collisionDepthSqr;
                 closestPlayer = other;
             }
 
-            if (closestDistance < 0)
+            if (closestDistanceSqr < 0)
             {
-                return (closestPlayer, closestDistance);
+                return (closestPlayer, closestDistanceSqr);
             }
         }
 
-        return (closestPlayer, closestDistance);
+        return (closestPlayer, closestDistanceSqr);
     }
 
     private void DeleteFood(Food food)
     {
-        GameObjectsToDisplay.Remove(food);
-        FoodsOnMap.Remove(food);
+        GameObjectsToDisplay.SwapRemove(food);
+        FoodsOnMap.SwapRemove(food);
     }
     
     private void DeletePlayer(Player player)
     {
-        GameObjectsToDisplay.Remove(player);
-        PlayersOnMap.Remove(player);
+        GameObjectsToDisplay.SwapRemove(player);
+        PlayersOnMap.SwapRemove(player);
     }
 
     public void Reset()

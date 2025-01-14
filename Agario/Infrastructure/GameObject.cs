@@ -20,13 +20,13 @@ public class GameObject
         WorldPosition = worldPosition;
     }
 
-    public float GetCollisionDepth(GameObject other)
+    public float GetCollisionDepthSqr(GameObject other)
     {
-        float distanceSqr = MathF.Sqrt((Shape.Position.X - other.Shape.Position.X) * (Shape.Position.X - other.Shape.Position.X) +
-                         (Shape.Position.Y - other.Shape.Position.Y) * (Shape.Position.Y - other.Shape.Position.Y));
+        float distanceSqr = (Shape.Position.X - other.Shape.Position.X) * (Shape.Position.X - other.Shape.Position.X) +
+                         (Shape.Position.Y - other.Shape.Position.Y) * (Shape.Position.Y - other.Shape.Position.Y);
 
         float radiusSum = Shape.Radius + other.Shape.Radius;
 
-        return distanceSqr - radiusSum;
+        return distanceSqr - radiusSum * radiusSum;
     }
 }

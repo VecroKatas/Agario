@@ -152,14 +152,13 @@ public class AgarioGame : IGameRules
 
     private Vector2f GetBotMoveDirection(Player bot)
     {
-        (Food closestFood, float foodDistance) = PlayingMap.GetClosestFoodAndDistance(bot);
-        (Player closestPlayer, float playerDistance) = PlayingMap.GetClosestPlayerAndDistance(bot);
+        (Food closestFood, float foodDistanceSqr) = PlayingMap.GetClosestFoodAndDistanceSqr(bot);
+        (Player closestPlayer, float playerDistanceSqr) = PlayingMap.GetClosestPlayerAndDistanceSqr(bot);
         
         Vector2f closestFoodDirection = bot.WorldPosition.CalculatedNormalisedDirection(closestFood.WorldPosition);
         Vector2f closestPlayerDirection = bot.WorldPosition.CalculatedNormalisedDirection(closestPlayer.WorldPosition);
-        
 
-        if (foodDistance < playerDistance)
+        if (foodDistanceSqr < playerDistanceSqr)
         {
             return closestFoodDirection;
         }
