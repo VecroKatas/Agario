@@ -1,9 +1,18 @@
 ﻿using Agario.Infrastructure;
 using Agario.Game.Factories;
 using Agario.Game.Interfaces;
+using SFML.Graphics;
 using SFML.System;
+using Time = Agario.Infrastructure.Time;
 
 namespace Agario.Game;
+
+public struct TextOnDisplay
+{
+    public Text TextObj;
+    public uint FontSize;
+    public Color Color;
+}
 
 public class AgarioGame : IGameRules
 {
@@ -18,14 +27,29 @@ public class AgarioGame : IGameRules
     
     public Player MainPlayer { get; private set; } = null;
 
-    public Action GameOver { get; set; }
+    public Action GameRestart { get; set; }
     
     private Vector2f _mousePosition;
     private Vector2f _mainPlayerMoveDirection;
+    private bool _isMainPlayerAlive = true;
+
+    private TextOnDisplay gameOverText;
+    private TextOnDisplay statsText;
+    private TextOnDisplay timeUntilRestartText;
+    
+    private Font textFont;
+    private string solutionPath;
+    private string localFontPath = "\\Fonts\\ARIAL.TTF";
+
+    private float _restartTimePassed;
+
+    private GameCycle _gameCycleInstance;
     
     public AgarioGame()
     {
         PlayingMap = new PlayingMap();
+
+        _gameCycleInstance = GameCycle.GetInstance();
         
         // Мабуть це виконується в MonoBehaviour
         GameCycle.GetInstance().RegisterObjectToInitialize(this);
@@ -37,6 +61,18 @@ public class AgarioGame : IGameRules
     {
         GeneratePlayers();
         GenerateFood();
+
+        _restartTimePassed = 0;
+        
+        solutionPath = GetSolutionPath();
+        
+        textFont = new Font(solutionPath + localFontPath);
+
+        RenderWindow renderWindow = _gameCycleInstance.RenderWindow;
+        
+        gameOverText = InitText("Game over!", 50, new Color(180, 180, 180), new Vector2f(renderWindow.Size.X * .41f, renderWindow.Size.Y * .4f));
+        statsText = InitText("Default stats", 30, new Color(160, 160, 160), new Vector2f(renderWindow.Size.X * .43f, renderWindow.Size.Y * .5f));
+        timeUntilRestartText = InitText("Restart time", 40, new Color(180, 180, 180), new Vector2f(renderWindow.Size.X * .38f, renderWindow.Size.Y * .7f));
     }
 
     public void Start()
@@ -46,22 +82,44 @@ public class AgarioGame : IGameRules
 
     public void PhysicsUpdate()
     {
-        _mousePosition = GameCycle.GetInstance().InputEvents.MousePosition;
-        _mainPlayerMoveDirection = MainPlayer.WorldPosition.CalculatedNormalisedDirection(_mousePosition);
+        if (_isMainPlayerAlive)
+        {
+            _mousePosition = GameCycle.GetInstance().InputEvents.MousePosition;
+            _mainPlayerMoveDirection = MainPlayer.WorldPosition.CalculatedNormalisedDirection(_mousePosition);
         
-        MoveAllPlayers();
+            MoveAllPlayers();
+        }
     }
     
     public void Update()
     {
-        GeneratePlayers();
-        GenerateFood();
+        if (_isMainPlayerAlive)
+        {
+            GeneratePlayers();
+            GenerateFood();
+        }
+        else
+        {
+            if (_restartTimePassed < SecondsAfterGameOver)
+            {
+                UpdateStatsText();
+                UpdateUntilRestartText(SecondsAfterGameOver - _restartTimePassed);
+
+                _restartTimePassed += Time.DeltaTime;
+            }
+            else
+            {
+                GameRestart.Invoke();
+            }
+        }
     }
     
     private void GeneratePlayers()
     {
         if (MainPlayer == null)
             MainPlayer = PlayingMap.CreatePlayer(true);
+
+        MainPlayer.OnBeingEaten += MainPlayerDied;
         
         while (PlayingMap.PlayersOnMap.Count < MAX_PLAYERS_AMOUNT)
         {
@@ -117,5 +175,83 @@ public class AgarioGame : IGameRules
         }
 
         return new Vector2f(0, 0);
+    }
+
+    public List<GameObject> GetGameObjectsToDisplay()
+    {
+        return _isMainPlayerAlive ? PlayingMap.GameObjectsToDisplay : new List<GameObject>();
+    }
+    
+    public List<Text> GetTextsToDisplay()
+    {
+        return _isMainPlayerAlive
+            ? new List<Text>()
+            : new List<Text>()
+            {
+                gameOverText.TextObj,
+                statsText.TextObj,
+                timeUntilRestartText.TextObj
+            };
+    }
+    
+    private void MainPlayerDied()
+    {
+        _isMainPlayerAlive = false;
+        
+        PlayingMap.GameObjectsToDisplay.Clear();
+    }
+
+    private TextOnDisplay InitText(string content, uint fontSize, Color color, Vector2f position)
+    {
+        TextOnDisplay textOnDisplay = new TextOnDisplay()
+        {
+            FontSize = fontSize,
+            Color = color
+        };
+        
+        textOnDisplay.TextObj = new Text(content, textFont, textOnDisplay.FontSize);
+        textOnDisplay.TextObj.FillColor = textOnDisplay.Color;
+        textOnDisplay.TextObj.Origin = new Vector2f(textOnDisplay.FontSize / 2f, textOnDisplay.FontSize / 2f);
+        textOnDisplay.TextObj.Position = position;
+
+        return textOnDisplay;
+    }
+
+    private TextOnDisplay InitText(string content, TextOnDisplay copyFrom)
+    {
+        return InitText(content, copyFrom.FontSize, copyFrom.Color, copyFrom.TextObj.Position);
+    }
+
+    private void UpdateStatsText()
+    {
+        string content = "Your size: " + MainPlayer.Shape.Radius + "\n" +
+                         "Food eaten: " + MainPlayer.FoodEaten + "\n" +
+                         "Players eaten: " + MainPlayer.PlayersEaten;
+
+        statsText = InitText(content, statsText);
+    }
+    
+    private void UpdateUntilRestartText(float timeUntilRestart)
+    {
+        string content = "Game restarts in: " + timeUntilRestart.ToString("0.00") + "s";
+
+        timeUntilRestartText = InitText(content, timeUntilRestartText);
+    }
+    
+    string? GetSolutionPath()
+    {
+        string? currentDirectory = Directory.GetCurrentDirectory();
+
+        while (!string.IsNullOrEmpty(currentDirectory))
+        {
+            if (Directory.GetFiles(currentDirectory, "*.sln").Length > 0)
+            {
+                return currentDirectory;
+            }
+
+            currentDirectory = Directory.GetParent(currentDirectory)?.FullName;
+        }
+
+        return null;
     }
 }

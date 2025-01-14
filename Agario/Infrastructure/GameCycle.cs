@@ -11,22 +11,26 @@ public class GameCycle
     public const float TIME_UNTIL_NEXT_UPDATE = 1f / TARGET_FPS;
 
     public InputEvents InputEvents;
+    
+    public RenderWindow RenderWindow { get; private set; }
 
     private IGameRules _gameRules;
-
-    private bool _isPlayerAlive = true;
 
     private List<IInitializeable> ObjectsToInitialize;
     private List<IPhysicsUpdatable> ObjectsToPhysicsUpdate;
     private List<IUpdatable> ObjectsToUpdate;
     
-    private RenderWindow _renderWindow;
     private Input _input;
     private Output _output;
 
     private static GameCycle _instance;
     
     private GameCycle() 
+    {
+        InitInterfaceLists();
+    }
+
+    private void InitInterfaceLists()
     {
         ObjectsToInitialize = new List<IInitializeable>();
         ObjectsToPhysicsUpdate = new List<IPhysicsUpdatable>();
@@ -66,9 +70,9 @@ public class GameCycle
         ObjectsToPhysicsUpdate.Add(obj);
     }
 
-    public void Init(RenderWindow renderWindow, IGameRules gameRules)
+    public void Initialization(RenderWindow renderWindow, IGameRules gameRules)
     {
-        _renderWindow = renderWindow;
+        RenderWindow = renderWindow;
         _input = new Input(renderWindow);
         _output = new Output(renderWindow);
         _gameRules = gameRules;
@@ -76,21 +80,18 @@ public class GameCycle
     
     public void StartGameCycle()
     {
-        Initialization();
-
+        InitObjects();
         GameLoop();
     }
     
-    private void Initialization()
+    private void InitObjects()
     {
         foreach (var obj in ObjectsToInitialize)
         {
             obj.Initialize();
         }
         
-        _isPlayerAlive = true;
-        
-        _gameRules.GameOver += GameOver;
+        _gameRules.GameRestart += GameRulesGameRestart;
 
         Time.Start();
     }
@@ -114,28 +115,11 @@ public class GameCycle
                 Output();
             }
         }
-        
-        /*// this should instead be a different class/scene, but i dont have time
-        float _restartTimePassed = 0;
-        while (_restartTimePassed < SecondsAfterGameOver)
-        {
-            Time.Update();
-            
-            if (Time.IsNextUpdate())
-            {
-                _output.DisplayGameOverScreen(SecondsAfterGameOver - _restartTimePassed, _mainPlayer);
-                
-                Time.UpdateDeltaTime();
-                _restartTimePassed += Time.DeltaTime;
-            }
-        }
-        
-        ResetGame();*/
     }
 
     private bool GameRunning()
     {
-        return _output.IsWindowOpen() && _isPlayerAlive;
+        return _output.IsWindowOpen();
     }
 
     private void Input()
@@ -160,23 +144,16 @@ public class GameCycle
         }
     }
 
-    private void GameOver()
+    private void GameRulesGameRestart()
     {
-        //PlayingMap.GameObjectsToDisplay.Clear();
-
-        _isPlayerAlive = false;
+        InitInterfaceLists();
+        Initialization(RenderWindow, new AgarioGame());
+        InitObjects();
     }
 
-    /*private void ResetGame()
-    {
-        InitFields(_renderWindow, new AgarioGame(PlayingMap));
-        StartGame();
-    }*/
-
-    public List<GameObject> GetGameObjectsToDisplay()
-    {
-        return _gameRules.PlayingMap.GameObjectsToDisplay;
-    }
+    public List<GameObject> GetGameObjectsToDisplay() => _gameRules.GetGameObjectsToDisplay();
+    
+    public List<Text> GetTextsToDisplay() => _gameRules.GetTextsToDisplay();
 
     private void Output()
     {

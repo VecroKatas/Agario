@@ -16,7 +16,7 @@ public class Boot
     public void StartGame()
     {
         GameCycle gameCycleInstance = GameCycle.GetInstance();
-        gameCycleInstance.Init(_renderWindow, new AgarioGame());
+        gameCycleInstance.Initialization(_renderWindow, new AgarioGame());
         gameCycleInstance.StartGameCycle();
     }
 }
