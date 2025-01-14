@@ -18,12 +18,6 @@ public class Output : IInitializeable
     public void Initialize()
     {
         
-        _renderWindow.Closed += WindowClosed;
-    }
-
-    public bool IsWindowOpen()
-    {
-        return _renderWindow.IsOpen;
     }
 
     public void Display()
@@ -46,11 +40,5 @@ public class Output : IInitializeable
         }
         
         _renderWindow.Display();
-    }
-    
-    void WindowClosed(object sender, EventArgs e)
-    {
-        RenderWindow w = (RenderWindow)sender;
-        w.Close();
     }
 }

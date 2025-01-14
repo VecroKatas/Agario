@@ -48,7 +48,7 @@ public class AgarioGame : IGameRules
     public AgarioGame()
     {
         PlayingMap = new PlayingMap();
-
+        
         _gameCycleInstance = GameCycle.GetInstance();
         
         // Мабуть це виконується в MonoBehaviour
@@ -59,6 +59,8 @@ public class AgarioGame : IGameRules
 
     public void Initialize()
     {
+        PlayingMap.StartSimulation();
+        
         GeneratePlayers();
         GenerateFood();
 
@@ -196,8 +198,9 @@ public class AgarioGame : IGameRules
     private void MainPlayerDied()
     {
         _isMainPlayerAlive = false;
-        
-        PlayingMap.GameObjectsToDisplay.Clear();
+
+        PlayingMap.StopSimulation();
+        PlayingMap.Reset();
     }
 
     private TextOnDisplay InitText(string content, uint fontSize, Color color, Vector2f position)

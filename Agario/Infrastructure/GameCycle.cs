@@ -73,6 +73,8 @@ public class GameCycle
     public void Initialization(RenderWindow renderWindow, IGameRules gameRules)
     {
         RenderWindow = renderWindow;
+        RenderWindow.Closed += WindowClosed;
+        
         _input = new Input(renderWindow);
         _output = new Output(renderWindow);
         _gameRules = gameRules;
@@ -119,7 +121,7 @@ public class GameCycle
 
     private bool GameRunning()
     {
-        return _output.IsWindowOpen();
+        return IsWindowOpen();
     }
 
     private void Input()
@@ -158,5 +160,16 @@ public class GameCycle
     private void Output()
     {
         _output.Display();
+    }
+
+    private bool IsWindowOpen()
+    {
+        return RenderWindow.IsOpen;
+    }
+    
+    void WindowClosed(object sender, EventArgs e)
+    {
+        RenderWindow w = (RenderWindow)sender;
+        w.Close();
     }
 }
