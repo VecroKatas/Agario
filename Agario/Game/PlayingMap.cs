@@ -22,6 +22,8 @@ public class PlayingMap : IInitializeable, IPhysicsUpdatable
     //public List<Food> FoodsOnMap;
 
     private Random _random = new Random();
+
+    private bool _simulationGoing = false;
     
     public PlayingMap() 
     { 
@@ -37,9 +39,20 @@ public class PlayingMap : IInitializeable, IPhysicsUpdatable
         //FoodsOnMap = new List<Food>();
     }
 
+    public void StartSimulation()
+    {
+        _simulationGoing = true;
+    }
+
+    public void StopSimulation()
+    {
+        _simulationGoing = false;
+    }
+
     public void PhysicsUpdate()
     {
-        HandleCollisions();
+        if (_simulationGoing)
+            HandleCollisions();
     }
 
     // factory method
@@ -108,6 +121,8 @@ public class PlayingMap : IInitializeable, IPhysicsUpdatable
             if (distanceSqr < -other.Shape.Radius * other.Shape.Radius * AllowedCollisionDepthModifierSqr)
             {
                 player.EatPlayer(other);
+                if (other.IsMainPlayer)
+                    break;
             }
         }
     }

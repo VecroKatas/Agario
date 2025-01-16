@@ -55,8 +55,9 @@ public class Player : IComponent
     public void EatFood(GameObject other)
     {
         FoodComponent foodComponent = other.TryGetComponent(typeof(FoodComponent));
-        _gameObject.Shape.Radius += food.NutritionValue * consumedFoodValueModifier;
-        Shape.Origin = new Vector2f(Shape.Radius, Shape.Radius);
+        
+        IncreaseRadius(food.NutritionValue);
+        
         NutritionValue = Shape.Radius;
 
         FoodEaten++;
@@ -67,14 +68,22 @@ public class Player : IComponent
 
     public void EatPlayer(Player player)
     {
-        Shape.Radius += player.NutritionValue * consumedFoodValueModifier;
-        Shape.Origin = new Vector2f(Shape.Radius, Shape.Radius);
+        IncreaseRadius(player.NutritionValue);
         NutritionValue = Shape.Radius;
 
         PlayersEaten++;
         
         ReduceSpeed(player.NutritionValue * consumedFoodValueModifier);
         player.BeingEaten();
+    }
+
+    private void IncreaseRadius(float delta)
+    {
+        if (Shape.Radius < _maxRadius)
+        {
+            Shape.Radius += delta * consumedFoodValueModifier;
+            Shape.Origin = new Vector2f(Shape.Radius, Shape.Radius);
+        }
     }
 
     private void ReduceSpeed(float valueConsumed)
