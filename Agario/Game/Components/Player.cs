@@ -1,4 +1,5 @@
 ﻿using System.IO.Pipes;
+using Agario.Game.Interfaces;
 using Agario.Infrastructure;
 using SFML.Graphics;
 using SFML.System;
@@ -6,7 +7,7 @@ using Time = Agario.Infrastructure.Time;
 
 namespace Agario.Game;
 
-public class Player : Food
+public class Player : IComponent
 {
     private float consumedFoodValueModifier = 1 / 4f;
     
@@ -16,13 +17,15 @@ public class Player : Food
 
     private float _minRadius;
     private float _maxRadius = 250;
+
+    private GameObject _gameObject;
     
     public int FoodEaten { get; private set; }
     public int PlayersEaten { get; private set; }
     
     public bool IsMainPlayer { get; private set; }
     
-    public Player(CircleShape circle, Vector2f worldPosition, bool isMainPlayer) : base(circle, worldPosition)
+    public Player(bool isMainPlayer)
     {
         IsMainPlayer = isMainPlayer;
         _currentMoveSpeed = _maxMoveSpeed;
@@ -30,23 +33,29 @@ public class Player : Food
         PlayersEaten = 0;
     }
 
+    public void SetGameObject(GameObject gameObject)
+    {
+        _gameObject = gameObject;
+    }
+
     public Vector2f CalculateNextWorldPosition(Vector2f direction)
     {
-        return WorldPosition + direction * _currentMoveSpeed * Time.DeltaTime;
+        return _gameObject.WorldPosition + direction * _currentMoveSpeed * Time.DeltaTime;
     }
     
     public void Move(Vector2f direction)
     {
-        WorldPosition += direction * _currentMoveSpeed * Time.DeltaTime;
+        _gameObject.WorldPosition += direction * _currentMoveSpeed * Time.DeltaTime;
         
         // recalculating scaling later here. Maybe in output, and not here?
-        Shape.Position += direction * _currentMoveSpeed * Time.DeltaTime;
+        _gameObject.Shape.Position += direction * _currentMoveSpeed * Time.DeltaTime;
         //Shape.Position += direction * _moveSpeed * Time.DeltaTime;
     }
 
-    public void EatFood(Food food)
+    public void EatFood(GameObject other)
     {
-        Shape.Radius += food.NutritionValue * consumedFoodValueModifier;
+        FoodComponent foodComponent = other.TryGetComponent(typeof(FoodComponent));
+        _gameObject.Shape.Radius += food.NutritionValue * consumedFoodValueModifier;
         Shape.Origin = new Vector2f(Shape.Radius, Shape.Radius);
         NutritionValue = Shape.Radius;
 

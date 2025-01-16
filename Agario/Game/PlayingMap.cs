@@ -17,8 +17,9 @@ public class PlayingMap : IInitializeable, IPhysicsUpdatable
     private float foodDefaultRadius = 4;
 
     public List<GameObject> GameObjectsToDisplay;
+    public List<GameObject> GameObjectsOnMap;
     public List<Player> PlayersOnMap;
-    public List<Food> FoodsOnMap;
+    //public List<Food> FoodsOnMap;
 
     private Random _random = new Random();
     
@@ -31,8 +32,9 @@ public class PlayingMap : IInitializeable, IPhysicsUpdatable
     public void Initialize()
     {
         GameObjectsToDisplay = new List<GameObject>();
+        GameObjectsOnMap = new List<GameObject>();
         PlayersOnMap = new List<Player>();
-        FoodsOnMap = new List<Food>();
+        //FoodsOnMap = new List<Food>();
     }
 
     public void PhysicsUpdate()
