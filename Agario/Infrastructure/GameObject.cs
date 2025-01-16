@@ -1,4 +1,5 @@
-﻿using Agario.Game.Interfaces;
+﻿using System.Runtime.CompilerServices;
+using Agario.Game.Interfaces;
 using SFML.Graphics;
 using SFML.System;
 
@@ -9,14 +10,14 @@ public class GameObject
     public Vector2f WorldPosition { get; set; }
     public CircleShape Shape { get; set; }
 
-    private List<IComponent> _components;
+    private readonly Dictionary<Type, IComponent> _components;
 
     protected GameObject() { }
     
     public GameObject(CircleShape circle)
     {
         Shape = circle;
-        _components = new List<IComponent>();
+        _components = new();
     }
 
     public GameObject(CircleShape circle, Vector2f worldPosition) : this(circle)
@@ -34,34 +35,30 @@ public class GameObject
         return distanceSqr - radiusSum * radiusSum;
     }
 
-    public void AddComponent(IComponent component)
+    public T GetComponent<T>() where T : class, IComponent
     {
-        IComponent existingComponent = TryGetComponent(component.GetType());
-
-        if (existingComponent == null)
-            _components.Add(component);
-        else
-            existingComponent = component;
-    }
-
-    public Game.Interfaces.IComponent TryGetComponent(System.Type type)
-    {
-        foreach (var component in _components)
+        if (_components.TryGetValue(typeof(T), out var component))
         {
-            if (component.GetType() == type)
-            {
-                return component;
-            }
+            return component as T;
         }
-
         return null;
     }
 
-    public void RemoveComponent(IComponent component)
+    public bool HasComponent<T>() where T : class, IComponent
     {
-        IComponent existingComponent = TryGetComponent(component.GetType());
+        return _components.ContainsKey(typeof(T));
+    }
 
-        if (existingComponent != null)
-            _components.SwapRemove(component);
+    public void AddComponent<T>(T component) where T : IComponent
+    {
+        var type = typeof(T);
+        if (_components.ContainsKey(type))
+        {
+            throw new InvalidOperationException($"Component of type {type.Name} already exists.");
+        }
+
+        _components[type] = component;
+        
+        component.SetGameObject(this);
     }
 }

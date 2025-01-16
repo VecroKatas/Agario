@@ -6,6 +6,15 @@ using SFML.System;
 
 namespace Agario.Game;
 
+public struct ClosestGameObjectsToPlayerInfo
+{
+    public GameObject Player;
+    public GameObject ClosestFood;
+    public float FoodDistanceSqr;
+    public GameObject ClosestPlayer;
+    public float PlayerDistanceSqr;
+}
+
 public class PlayingMap : IInitializeable, IPhysicsUpdatable
 {
     public static readonly uint Width = 1800;
@@ -18,8 +27,9 @@ public class PlayingMap : IInitializeable, IPhysicsUpdatable
 
     public List<GameObject> GameObjectsToDisplay;
     public List<GameObject> GameObjectsOnMap;
-    public List<Player> PlayersOnMap;
-    //public List<Food> FoodsOnMap;
+    public List<PlayerComponent> PlayersOnMap;
+
+    public int FoodsOnMapCount { get; private set; } = 0;
 
     private Random _random = new Random();
 
@@ -35,8 +45,7 @@ public class PlayingMap : IInitializeable, IPhysicsUpdatable
     {
         GameObjectsToDisplay = new List<GameObject>();
         GameObjectsOnMap = new List<GameObject>();
-        PlayersOnMap = new List<Player>();
-        //FoodsOnMap = new List<Food>();
+        PlayersOnMap = new List<PlayerComponent>();
     }
 
     public void StartSimulation()
@@ -56,22 +65,24 @@ public class PlayingMap : IInitializeable, IPhysicsUpdatable
     }
 
     // factory method
-    public Player CreatePlayer(bool isMainPlayer)
+    public GameObject CreatePlayer(bool isMainPlayer)
     {
         Vector2f worldPosition = new Vector2f(MathF.Abs(GetRandomMaxAbs1Float()) * Width, MathF.Abs(GetRandomMaxAbs1Float()) * Height);
         
-        Player newPlayer = PlayerFactory.CreatePlayer(isMainPlayer, playerDefaultRadius, worldPosition);
+        GameObject newPlayer = PlayerFactory.CreatePlayer(isMainPlayer, playerDefaultRadius, worldPosition);
         
         GameObjectsToDisplay.Add(newPlayer);
-        PlayersOnMap.Add(newPlayer);
+        GameObjectsOnMap.Add(newPlayer);
+        PlayersOnMap.Add(newPlayer.GetComponent<PlayerComponent>());
 
-        newPlayer.OnBeingEaten += () => DeletePlayer(newPlayer);
+        newPlayer.GetComponent<FoodComponent>().OnBeingEaten += () => DeleteGameObject(newPlayer);
 
         return newPlayer;
     }
 
     public void CreateFood(int nutritionValue)
     {
+        // rewrite with GetProperCoords method
         Vector2f worldPosition = new Vector2f(MathF.Abs(GetRandomMaxAbs1Float()) * Width * .99f, MathF.Abs(GetRandomMaxAbs1Float()) * Height * .99f);
 
         if (worldPosition.X < foodDefaultRadius)
@@ -79,49 +90,45 @@ public class PlayingMap : IInitializeable, IPhysicsUpdatable
         if (worldPosition.Y < foodDefaultRadius)
             worldPosition.Y = Height * .99f;
         
-        Food newFood = FoodFactory.CreateFood(foodDefaultRadius, nutritionValue, worldPosition);
+        GameObject newFood = FoodFactory.CreateFood(foodDefaultRadius, nutritionValue, worldPosition);
         
         GameObjectsToDisplay.Add(newFood);
-        FoodsOnMap.Add(newFood);
+        GameObjectsOnMap.Add(newFood);
 
-        newFood.OnBeingEaten += () => DeleteFood(newFood);
+        newFood.GetComponent<FoodComponent>().OnBeingEaten += () => DeleteGameObject(newFood);
+
+        FoodsOnMapCount++;
     }
     
     private void HandleCollisions()
     {
-        HandlePlayerFoodCollision();
-        
-        HandlePlayerPlayerCollision();
+        HandlePlayerCollision();
 
         HandlePlayersOverlapWithBorder();
     }
 
-    private void HandlePlayerFoodCollision()
+    private void HandlePlayerCollision()
     {
-        foreach (var player in PlayersOnMap)
+        foreach (var player in new List<PlayerComponent>(PlayersOnMap))
         {
-            (Food food, float distanceSqr) = GetClosestFoodAndDistanceSqr(player);
+            ClosestGameObjectsToPlayerInfo info = GetClosestGameObjectsInfo(player);
 
-            if (distanceSqr < -food.Shape.Radius * food.Shape.Radius * AllowedCollisionDepthModifierSqr)
+            float foodMargin = info.ClosestFood.Shape.Radius * info.ClosestFood.Shape.Radius * AllowedCollisionDepthModifierSqr;
+
+            if (info.FoodDistanceSqr < -foodMargin)
             {
-                player.EatFood(food);
+                player.EatFood(info.ClosestFood);
             }
-        }
-    }
 
-    private void HandlePlayerPlayerCollision()
-    {
-        foreach (var player in new List<Player>(PlayersOnMap))
-        {
-            (Player other, float distanceSqr) = GetClosestPlayerAndDistanceSqr(player);
+            float playerMargin = info.ClosestPlayer.Shape.Radius * info.ClosestPlayer.Shape.Radius * AllowedCollisionDepthModifierSqr;
             
-            if (player.Shape.Radius < other.Shape.Radius)
+            if (player.GameObject.Shape.Radius < info.ClosestPlayer.Shape.Radius)
                 continue;
             
-            if (distanceSqr < -other.Shape.Radius * other.Shape.Radius * AllowedCollisionDepthModifierSqr)
+            if (info.PlayerDistanceSqr < -playerMargin)
             {
-                player.EatPlayer(other);
-                if (other.IsMainPlayer)
+                player.EatFood(info.ClosestPlayer);
+                if (info.ClosestPlayer.GetComponent<PlayerComponent>().IsMainPlayer)
                     break;
             }
         }
@@ -132,117 +139,105 @@ public class PlayingMap : IInitializeable, IPhysicsUpdatable
         foreach (var player in PlayersOnMap)
         {
             Vector2f moveOutDirection = new Vector2f(0, 0);
-            if (player.WorldPosition.X - player.Shape.Radius < 0)
+            if (player.GameObject.WorldPosition.X - player.GameObject.Shape.Radius < 0)
                 moveOutDirection.X = 1;
-            else if (player.WorldPosition.X + player.Shape.Radius > Width)
+            else if (player.GameObject.WorldPosition.X + player.GameObject.Shape.Radius > Width)
                 moveOutDirection.X = -1;
         
-            if (player.WorldPosition.Y - player.Shape.Radius < 0)
+            if (player.GameObject.WorldPosition.Y - player.GameObject.Shape.Radius < 0)
                 moveOutDirection.Y = 1;
-            else if (player.WorldPosition.Y + player.Shape.Radius > Height)
+            else if (player.GameObject.WorldPosition.Y + player.GameObject.Shape.Radius > Height)
                 moveOutDirection.Y = -1;
         
             player.Move(moveOutDirection);
         }
     }
 
-    public void MovePlayer(Player player, Vector2f moveDirection)
+    public void MovePlayer(PlayerComponent playerComponent, Vector2f moveDirection)
     {
         if (moveDirection.IsZeros())
             return;
 
-        Vector2f newPosition = player.CalculateNextWorldPosition(moveDirection);
+        Vector2f newPosition = playerComponent.CalculateNextWorldPosition(moveDirection);
         
-        if (!IsWithinHorizontalBorders(player.Shape.Radius, newPosition))
+        if (!IsGameObjectWithinHorizontalBorders(playerComponent.GameObject, newPosition))
         {
             moveDirection.X = 0;
         }
         
-        if (!IsWithinVerticalBorders(player.Shape.Radius, newPosition))
+        if (!IsGameObjectWithinVerticalBorders(playerComponent.GameObject, newPosition))
         {
             moveDirection.Y = 0;
         }
         
-        player.Move(moveDirection);
+        playerComponent.Move(moveDirection);
     }
     
-    private bool IsWithinHorizontalBorders(float radius, Vector2f newPosition)
+    private bool IsGameObjectWithinHorizontalBorders(GameObject gameObject, Vector2f newPosition)
     {
-        return newPosition.X - radius > 0 && newPosition.X + radius < Width;
+        return newPosition.X - gameObject.Shape.Radius > 0 && newPosition.X + gameObject.Shape.Radius < Width;
     }
     
-    private bool IsWithinVerticalBorders(float radius, Vector2f newPosition)
+    private bool IsGameObjectWithinVerticalBorders(GameObject gameObject, Vector2f newPosition)
     {
-        return newPosition.Y - radius > 0 && newPosition.Y + radius < Height;
+        return newPosition.Y - gameObject.Shape.Radius > 0 && newPosition.Y + gameObject.Shape.Radius < Height;
     }
     
     private float GetRandomMaxAbs1Float()
     {
         return _random.Next(-100, 101) / 100f;
     }
-
-    public (Food, float) GetClosestFoodAndDistanceSqr(Player player)
+    
+    public ClosestGameObjectsToPlayerInfo GetClosestGameObjectsInfo(PlayerComponent playerComponent)
     {
-        Food closestFood = null;
-        float closestDistanceSqr = float.MaxValue;
-            
-        foreach (var food in FoodsOnMap)
+        ClosestGameObjectsToPlayerInfo info = new ClosestGameObjectsToPlayerInfo()
         {
-            float collisionDepthSqr = player.GetCollisionDepthSqr(food);
-
-            if (collisionDepthSqr < closestDistanceSqr)
+            Player = playerComponent.GameObject,
+            ClosestFood = null,
+            FoodDistanceSqr = float.MaxValue,
+            ClosestPlayer = null,
+            PlayerDistanceSqr = float.MaxValue
+        };
+            
+        foreach (var other in GameObjectsOnMap)
+        {
+            float collisionDepthSqr = playerComponent.GameObject.GetCollisionDepthSqr(other);
+            
+            if (other.HasComponent<PlayerComponent>())
             {
-                closestDistanceSqr = collisionDepthSqr;
-                closestFood = food;
-            }
+                if (playerComponent.GameObject == other)
+                    continue;
 
-            if (closestDistanceSqr < 0)
-            {
-                return (closestFood, closestDistanceSqr);
+                if (collisionDepthSqr < info.PlayerDistanceSqr)
+                {
+                    info.PlayerDistanceSqr = collisionDepthSqr;
+                    info.ClosestPlayer = other;
+                }
             }
+            else
+            {
+                if (collisionDepthSqr < info.FoodDistanceSqr)
+                {
+                    info.FoodDistanceSqr = collisionDepthSqr;
+                    info.ClosestFood = other;
+                }
+            }
+            
         }
 
-        return (closestFood, closestDistanceSqr);
+        return info;
     }
     
-    public (Player, float) GetClosestPlayerAndDistanceSqr(Player player)
+    private void DeleteGameObject(GameObject gameObject)
     {
-        Player closestPlayer = null;
-        float closestDistanceSqr = float.MaxValue;
-            
-        foreach (var other in PlayersOnMap)
-        {
-            // Check the same player
-            if (Object.ReferenceEquals(player, other))
-                continue;
-                
-            float collisionDepthSqr = player.GetCollisionDepthSqr(other);
-
-            if (collisionDepthSqr < closestDistanceSqr)
-            {
-                closestDistanceSqr = collisionDepthSqr;
-                closestPlayer = other;
-            }
-
-            if (closestDistanceSqr < 0)
-            {
-                return (closestPlayer, closestDistanceSqr);
-            }
-        }
-
-        return (closestPlayer, closestDistanceSqr);
-    }
-
-    private void DeleteFood(Food food)
-    {
-        GameObjectsToDisplay.SwapRemove(food);
-        FoodsOnMap.SwapRemove(food);
-    }
-    
-    private void DeletePlayer(Player player)
-    {
-        GameObjectsToDisplay.SwapRemove(player);
-        PlayersOnMap.SwapRemove(player);
+        var component = gameObject.GetComponent<PlayerComponent>();
+        if (component != null)
+            PlayersOnMap.SwapRemove(component);
+        else
+            FoodsOnMapCount--;
+        
+        GameObjectsToDisplay.SwapRemove(gameObject);
+        GameObjectsOnMap.SwapRemove(gameObject);
     }
 
     public void Reset()

@@ -35,9 +35,7 @@ public static class FoodFactory
         circle.FillColor = FoodColors[(FoodColor)nutritionValue];
 
         GameObject newGameObject = new GameObject(circle, worldPosition);
-
-        FoodComponent foodComponent = new FoodComponent(nutritionValue);
-        newGameObject.AddComponent(foodComponent);
+        newGameObject.AddComponent(new FoodComponent(nutritionValue));
         
         return newGameObject;
     }
