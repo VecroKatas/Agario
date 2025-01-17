@@ -1,4 +1,5 @@
-﻿using SFML.Graphics;
+﻿using Agario.Infrastructure;
+using SFML.Graphics;
 using SFML.System;
 
 namespace Agario.Game.Factories;
@@ -23,7 +24,7 @@ public static class FoodFactory
         {FoodColor.Purple, new Color(128, 0, 128)},
     };
 
-    public static Food CreateFood(float defaultRadius, int nutritionValue, Vector2f worldPosition)
+    public static GameObject CreateFood(float defaultRadius, int nutritionValue, Vector2f worldPosition)
     {
         float radius = defaultRadius * .9f + defaultRadius / 5f * nutritionValue;
         
@@ -33,8 +34,9 @@ public static class FoodFactory
         circle.Position = worldPosition;
         circle.FillColor = FoodColors[(FoodColor)nutritionValue];
 
-        Food newFood = new Food(circle, worldPosition, nutritionValue);
+        GameObject newGameObject = new GameObject(circle, worldPosition);
+        newGameObject.AddComponent(new FoodComponent(nutritionValue));
         
-        return newFood;
+        return newGameObject;
     }
 }

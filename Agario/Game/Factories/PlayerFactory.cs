@@ -1,4 +1,5 @@
 ﻿using Agario.Game;
+using Agario.Infrastructure;
 using SFML.Graphics;
 using SFML.System;
 
@@ -13,7 +14,7 @@ public static class PlayerFactory
         return new Color((byte)random.Next(50, 200), (byte)random.Next(50, 200), (byte)random.Next(50, 200));
     }
 
-    public static Player CreatePlayer(bool isMainPlayer, float defaultRadius, Vector2f worldPosition)
+    public static GameObject CreatePlayer(bool isMainPlayer, float defaultRadius, Vector2f worldPosition)
     {
         CircleShape circle = new CircleShape(defaultRadius);
         
@@ -34,8 +35,9 @@ public static class PlayerFactory
         circle.Position = worldPosition;
         circle.FillColor = newColor;
 
-        Player newPlayer = new Player(circle, worldPosition, isMainPlayer);
+        GameObject newPLayer = new GameObject(circle, worldPosition);
+        newPLayer.AddComponent(new PlayerComponent(isMainPlayer));
 
-        return newPlayer;
+        return newPLayer;
     }
 }

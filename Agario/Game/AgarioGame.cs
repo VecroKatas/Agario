@@ -25,7 +25,7 @@ public class AgarioGame : IGameRules
     
     public PlayingMap PlayingMap { get; private set; }
     
-    public Player MainPlayer { get; private set; } = null;
+    public GameObject MainPlayer { get; private set; } = null;
 
     public Action GameRestart { get; set; }
     
@@ -76,6 +76,27 @@ public class AgarioGame : IGameRules
         statsText = InitText("Default stats", 30, new Color(160, 160, 160), new Vector2f(renderWindow.Size.X * .43f, renderWindow.Size.Y * .5f));
         timeUntilRestartText = InitText("Restart time", 40, new Color(180, 180, 180), new Vector2f(renderWindow.Size.X * .38f, renderWindow.Size.Y * .7f));
     }
+    
+    private void GeneratePlayers()
+    {
+        if (MainPlayer == null)
+            MainPlayer = PlayingMap.CreatePlayer(true);
+
+        MainPlayer.GetComponent<FoodComponent>().OnBeingEaten += MainPlayerDied;
+        
+        while (PlayingMap.PlayersOnMap.Count < MAX_PLAYERS_AMOUNT)
+        {
+            PlayingMap.CreatePlayer(false);
+        }
+    }
+
+    private void GenerateFood()
+    {
+        while (PlayingMap.FoodsOnMapCount < MAX_FOOD_AMOUNT)
+        {
+            PlayingMap.CreateFood(_random.Next(1, Enum.GetNames(typeof(FoodColor)).Length));
+        }
+    }
 
     public void Start()
     {
@@ -87,7 +108,7 @@ public class AgarioGame : IGameRules
         if (_isMainPlayerAlive)
         {
             _mousePosition = GameCycle.GetInstance().InputEvents.MousePosition;
-            _mainPlayerMoveDirection = MainPlayer.WorldPosition.CalculatedNormalisedDirection(_mousePosition);
+            _mainPlayerMoveDirection = MainPlayer.WorldPosition.CalculateNormalisedDirection(_mousePosition);
         
             MoveAllPlayers();
         }
@@ -116,27 +137,6 @@ public class AgarioGame : IGameRules
         }
     }
     
-    private void GeneratePlayers()
-    {
-        if (MainPlayer == null)
-            MainPlayer = PlayingMap.CreatePlayer(true);
-
-        MainPlayer.OnBeingEaten += MainPlayerDied;
-        
-        while (PlayingMap.PlayersOnMap.Count < MAX_PLAYERS_AMOUNT)
-        {
-            PlayingMap.CreatePlayer(false);
-        }
-    }
-
-    private void GenerateFood()
-    {
-        while (PlayingMap.FoodsOnMap.Count < MAX_FOOD_AMOUNT)
-        {
-            PlayingMap.CreateFood(_random.Next(1, Enum.GetNames(typeof(FoodColor)).Length));
-        }
-    }
-    
     private void MoveAllPlayers()
     {
         foreach (var player in PlayingMap.PlayersOnMap)
@@ -152,25 +152,25 @@ public class AgarioGame : IGameRules
         }
     }
 
-    private Vector2f GetBotMoveDirection(Player bot)
+    private Vector2f GetBotMoveDirection(PlayerComponent bot)
     {
-        (Food closestFood, float foodDistanceSqr) = PlayingMap.GetClosestFoodAndDistanceSqr(bot);
-        (Player closestPlayer, float playerDistanceSqr) = PlayingMap.GetClosestPlayerAndDistanceSqr(bot);
+        ClosestGameObjectsToPlayerInfo info = PlayingMap.GetClosestGameObjectsInfo(bot);
         
-        Vector2f closestFoodDirection = bot.WorldPosition.CalculatedNormalisedDirection(closestFood.WorldPosition);
-        Vector2f closestPlayerDirection = bot.WorldPosition.CalculatedNormalisedDirection(closestPlayer.WorldPosition);
+        Vector2f closestFoodDirection = bot.GameObject.WorldPosition.CalculateNormalisedDirection(info.ClosestFood.WorldPosition);
+        Vector2f closestPlayerDirection = bot.GameObject.WorldPosition.CalculateNormalisedDirection(info.ClosestPlayer.WorldPosition);
 
-        if (foodDistanceSqr < playerDistanceSqr)
+        if (info.FoodDistanceSqr < info.PlayerDistanceSqr)
         {
             return closestFoodDirection;
         }
         
-        if (closestPlayer.NutritionValue < bot.NutritionValue)
+        // i dont like how it looks. so many dots
+        if (info.ClosestPlayer.GetComponent<FoodComponent>().NutritionValue < bot.GameObject.GetComponent<FoodComponent>().NutritionValue)
         {
             return closestPlayerDirection;
         }
         
-        if (closestPlayer.NutritionValue >= bot.NutritionValue)
+        if (info.ClosestPlayer.GetComponent<FoodComponent>().NutritionValue >= bot.GameObject.GetComponent<FoodComponent>().NutritionValue)
         {
             return (closestFoodDirection - closestPlayerDirection).Normalise();
         }
@@ -227,8 +227,8 @@ public class AgarioGame : IGameRules
     private void UpdateStatsText()
     {
         string content = "Your size: " + MainPlayer.Shape.Radius + "\n" +
-                         "Food eaten: " + MainPlayer.FoodEaten + "\n" +
-                         "Players eaten: " + MainPlayer.PlayersEaten;
+                         "Food eaten: " + MainPlayer.GetComponent<PlayerComponent>().FoodEaten + "\n" +
+                         "Players eaten: " + MainPlayer.GetComponent<PlayerComponent>().PlayersEaten;
 
         statsText = InitText(content, statsText);
     }
