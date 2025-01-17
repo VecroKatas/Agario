@@ -1,21 +1,32 @@
 ﻿using Agario.Game.Components;
+using Agario.Game.Utilities;
 using Agario.Infrastructure;
 using SFML.Graphics;
 using SFML.System;
 
 namespace Agario.Game.Factories;
 
-public static class PlayerFactory
+public class PlayerFactory
 {
-    private static Color GetRandomColor()
+    private Color GetRandomColor()
     {
         Random random = new Random();
 
         return new Color((byte)random.Next(50, 200), (byte)random.Next(50, 200), (byte)random.Next(50, 200));
     }
+    
+    private PlayingMap _playingMap;
 
-    public static GameObject CreatePlayer(bool isMainPlayer, float defaultRadius, Vector2f worldPosition)
+    public PlayerFactory(PlayingMap playingMap)
     {
+        _playingMap = playingMap;
+    }
+
+    public GameObject CreatePlayer(bool isMainPlayer, float defaultRadius)
+    {
+        
+        Vector2f worldPosition = GetValidSpawnCoords();
+        
         CircleShape circle = new CircleShape(defaultRadius);
         
         circle.Origin = new Vector2f(defaultRadius, defaultRadius);
@@ -24,7 +35,7 @@ public static class PlayerFactory
         
         if (isMainPlayer)
         {
-            worldPosition = new Vector2f(PlayingMap.Width / 2, PlayingMap.Height / 2);
+            worldPosition = new Vector2f(_playingMap.Width / 2, _playingMap.Height / 2);
             newColor = new Color(200, 200, 200);
         }
         else
@@ -35,9 +46,32 @@ public static class PlayerFactory
         circle.Position = worldPosition;
         circle.FillColor = newColor;
 
-        GameObject newPLayer = new GameObject(circle, worldPosition);
-        newPLayer.AddComponent(new PlayerComponent(isMainPlayer));
+        GameObject newPlayer = new GameObject(circle, worldPosition);
+        newPlayer.AddComponent(new PlayerComponent(isMainPlayer, _playingMap));
+        
+        _playingMap.GameObjectsToDisplay.Add(newPlayer);
+        _playingMap.GameObjectsOnMap.Add(newPlayer);
+        _playingMap.PlayersOnMap.Add(newPlayer.GetComponent<PlayerComponent>());
 
-        return newPLayer;
+        newPlayer.GetComponent<FoodComponent>().OnBeingEaten += () => _playingMap.DeleteGameObject(newPlayer);
+
+        return newPlayer;
+    }
+
+    private Vector2f GetValidSpawnCoords()
+    {
+        Vector2f randomVector = Vector2fUtilities.GetRandomSmallVector();
+        
+        if (randomVector.X < .01f)
+            randomVector.X = .01f;
+        if (randomVector.X > .99f)
+            randomVector.X = .99f;
+        
+        if (randomVector.Y < .01f)
+            randomVector.Y = .01f;
+        if (randomVector.Y > .99f)
+            randomVector.Y = .99f;
+        
+        return new Vector2f( randomVector.X * _playingMap.Width, randomVector.Y * _playingMap.Height);
     }
 }

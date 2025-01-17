@@ -1,4 +1,5 @@
 ﻿using Agario.Game.Components;
+using Agario.Game.Utilities;
 using Agario.Infrastructure;
 using SFML.Graphics;
 using SFML.System;
@@ -14,7 +15,7 @@ public enum FoodColor
     Purple
 }
 
-public static class FoodFactory
+public class FoodFactory
 {
     private static readonly Dictionary<FoodColor, Color> FoodColors = new Dictionary<FoodColor, Color>()
     {
@@ -25,8 +26,17 @@ public static class FoodFactory
         {FoodColor.Purple, new Color(128, 0, 128)},
     };
 
-    public static GameObject CreateFood(float defaultRadius, int nutritionValue, Vector2f worldPosition)
+    private PlayingMap _playingMap;
+
+    public FoodFactory(PlayingMap playingMap)
     {
+        _playingMap = playingMap;
+    }
+
+    public GameObject CreateFood(float defaultRadius, int nutritionValue)
+    {
+        Vector2f worldPosition = GetValidSpawnCoords();
+        
         float radius = defaultRadius * .9f + defaultRadius / 5f * nutritionValue;
         
         CircleShape circle = new CircleShape(radius, (uint)nutritionValue + 2);
@@ -38,6 +48,30 @@ public static class FoodFactory
         GameObject newGameObject = new GameObject(circle, worldPosition);
         newGameObject.AddComponent(new FoodComponent(nutritionValue));
         
+        _playingMap.GameObjectsToDisplay.Add(newGameObject);
+        _playingMap.GameObjectsOnMap.Add(newGameObject);
+
+        _playingMap.FoodsOnMapCount++;
+
+        newGameObject.GetComponent<FoodComponent>().OnBeingEaten += () => _playingMap.DeleteGameObject(newGameObject);
+        
         return newGameObject;
+    }
+
+    private Vector2f GetValidSpawnCoords()
+    {
+        Vector2f randomVector = Vector2fUtilities.GetRandomSmallVector();
+        
+        if (randomVector.X < .01f)
+            randomVector.X = .01f;
+        if (randomVector.X > .99f)
+            randomVector.X = .99f;
+        
+        if (randomVector.Y < .01f)
+            randomVector.Y = .01f;
+        if (randomVector.Y > .99f)
+            randomVector.Y = .99f;
+        
+        return new Vector2f( randomVector.X * _playingMap.Width, randomVector.Y * _playingMap.Height);
     }
 }

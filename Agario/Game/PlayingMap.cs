@@ -18,10 +18,10 @@ public struct ClosestGameObjectsToPlayerInfo
 
 public class PlayingMap : IInitializeable, IPhysicsUpdatable
 {
-    public static readonly uint Width = 1800;
-    public static readonly uint Height = 900;
+    public readonly uint Width = 1800;
+    public readonly uint Height = 900;
     
-    private const float AllowedCollisionDepthModifierSqr = 3f;
+    private const float AllowedCollisionDepthModifierSqr = 1.5f;
 
     private const float PlayerDefaultRadius = 10;
     private const float FoodDefaultRadius = 4;
@@ -30,9 +30,12 @@ public class PlayingMap : IInitializeable, IPhysicsUpdatable
     public List<GameObject> GameObjectsOnMap;
     public List<PlayerComponent> PlayersOnMap;
 
-    public int FoodsOnMapCount { get; private set; } = 0;
+    public int FoodsOnMapCount { get; set; } = 0;
 
     private Random _random = new Random();
+
+    private FoodFactory _foodFactory;
+    private PlayerFactory _playerFactory;
 
     private bool _simulationGoing = false;
     
@@ -47,6 +50,9 @@ public class PlayingMap : IInitializeable, IPhysicsUpdatable
         GameObjectsToDisplay = new List<GameObject>();
         GameObjectsOnMap = new List<GameObject>();
         PlayersOnMap = new List<PlayerComponent>();
+
+        _foodFactory = new FoodFactory(this);
+        _playerFactory = new PlayerFactory(this);
     }
 
     public void StartSimulation()
@@ -65,40 +71,16 @@ public class PlayingMap : IInitializeable, IPhysicsUpdatable
             HandleCollisions();
     }
 
-    // factory method
     public GameObject CreatePlayer(bool isMainPlayer)
     {
-        Vector2f worldPosition = new Vector2f(MathF.Abs(GetRandomMaxAbs1Float()) * Width, MathF.Abs(GetRandomMaxAbs1Float()) * Height);
-        
-        GameObject newPlayer = PlayerFactory.CreatePlayer(isMainPlayer, PlayerDefaultRadius, worldPosition);
-        
-        GameObjectsToDisplay.Add(newPlayer);
-        GameObjectsOnMap.Add(newPlayer);
-        PlayersOnMap.Add(newPlayer.GetComponent<PlayerComponent>());
-
-        newPlayer.GetComponent<FoodComponent>().OnBeingEaten += () => DeleteGameObject(newPlayer);
+        GameObject newPlayer = _playerFactory.CreatePlayer(isMainPlayer, PlayerDefaultRadius);
 
         return newPlayer;
     }
 
     public void CreateFood(int nutritionValue)
     {
-        // rewrite with GetProperCoords method
-        Vector2f worldPosition = new Vector2f(MathF.Abs(GetRandomMaxAbs1Float()) * Width * .99f, MathF.Abs(GetRandomMaxAbs1Float()) * Height * .99f);
-
-        if (worldPosition.X < FoodDefaultRadius)
-            worldPosition.X = Width * .99f;
-        if (worldPosition.Y < FoodDefaultRadius)
-            worldPosition.Y = Height * .99f;
-        
-        GameObject newFood = FoodFactory.CreateFood(FoodDefaultRadius, nutritionValue, worldPosition);
-        
-        GameObjectsToDisplay.Add(newFood);
-        GameObjectsOnMap.Add(newFood);
-
-        newFood.GetComponent<FoodComponent>().OnBeingEaten += () => DeleteGameObject(newFood);
-
-        FoodsOnMapCount++;
+        _foodFactory.CreateFood(FoodDefaultRadius, nutritionValue);
     }
     
     private void HandleCollisions()
@@ -108,11 +90,12 @@ public class PlayingMap : IInitializeable, IPhysicsUpdatable
         HandlePlayersOverlapWithBorder();
     }
 
+    // Should throw an event instead of actually handling it
     private void HandlePlayerCollision()
     {
         foreach (var player in new List<PlayerComponent>(PlayersOnMap))
         {
-            ClosestGameObjectsToPlayerInfo info = GetClosestGameObjectsInfo(player);
+            ClosestGameObjectsToPlayerInfo info = GetClosestGameObjectsInfo(player.GameObject);
 
             float foodMargin = info.ClosestFood.Shape.Radius * info.ClosestFood.Shape.Radius * AllowedCollisionDepthModifierSqr;
 
@@ -154,11 +137,8 @@ public class PlayingMap : IInitializeable, IPhysicsUpdatable
         }
     }
 
-    public void MovePlayer(PlayerComponent playerComponent, Vector2f moveDirection)
+    public Vector2f AdjustMoveDirection(PlayerComponent playerComponent, Vector2f moveDirection)
     {
-        if (moveDirection.IsZeros())
-            return;
-
         Vector2f newPosition = playerComponent.CalculateNextWorldPosition(moveDirection);
         
         if (!IsGameObjectWithinHorizontalBorders(playerComponent.GameObject, newPosition))
@@ -171,7 +151,7 @@ public class PlayingMap : IInitializeable, IPhysicsUpdatable
             moveDirection.Y = 0;
         }
         
-        playerComponent.Move(moveDirection);
+        return moveDirection;
     }
     
     private bool IsGameObjectWithinHorizontalBorders(GameObject gameObject, Vector2f newPosition)
@@ -184,16 +164,11 @@ public class PlayingMap : IInitializeable, IPhysicsUpdatable
         return newPosition.Y - gameObject.Shape.Radius > 0 && newPosition.Y + gameObject.Shape.Radius < Height;
     }
     
-    private float GetRandomMaxAbs1Float()
-    {
-        return _random.Next(-100, 101) / 100f;
-    }
-    
-    public ClosestGameObjectsToPlayerInfo GetClosestGameObjectsInfo(PlayerComponent playerComponent)
+    public ClosestGameObjectsToPlayerInfo GetClosestGameObjectsInfo(GameObject gameObject)
     {
         ClosestGameObjectsToPlayerInfo info = new ClosestGameObjectsToPlayerInfo()
         {
-            Player = playerComponent.GameObject,
+            Player = gameObject,
             ClosestFood = null,
             FoodDistanceSqr = float.MaxValue,
             ClosestPlayer = null,
@@ -202,11 +177,11 @@ public class PlayingMap : IInitializeable, IPhysicsUpdatable
             
         foreach (var other in GameObjectsOnMap)
         {
-            float collisionDepthSqr = playerComponent.GameObject.GetCollisionDepthSqr(other);
+            float collisionDepthSqr = gameObject.GetCollisionDepthSqr(other);
             
             if (other.HasComponent<PlayerComponent>())
             {
-                if (playerComponent.GameObject == other)
+                if (gameObject == other)
                     continue;
 
                 if (collisionDepthSqr < info.PlayerDistanceSqr)
@@ -229,7 +204,7 @@ public class PlayingMap : IInitializeable, IPhysicsUpdatable
         return info;
     }
     
-    private void DeleteGameObject(GameObject gameObject)
+    public void DeleteGameObject(GameObject gameObject)
     {
         var component = gameObject.GetComponent<PlayerComponent>();
         if (component != null)

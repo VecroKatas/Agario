@@ -31,8 +31,6 @@ public class AgarioGame : IGameRules
 
     public Action GameRestart { get; set; }
     
-    private Vector2f _mousePosition;
-    private Vector2f _mainPlayerMoveDirection;
     private bool _isMainPlayerAlive = true;
 
     private TextOnDisplay _gameOverText;
@@ -101,13 +99,7 @@ public class AgarioGame : IGameRules
 
     public void PhysicsUpdate()
     {
-        if (_isMainPlayerAlive)
-        {
-            _mousePosition = GameCycle.GetInstance().InputEvents.MousePosition;
-            _mainPlayerMoveDirection = MainPlayer.WorldPosition.CalculateNormalisedDirection(_mousePosition);
         
-            MoveAllPlayers();
-        }
     }
     
     public void Update()
@@ -131,47 +123,6 @@ public class AgarioGame : IGameRules
                 GameRestart.Invoke();
             }
         }
-    }
-    
-    private void MoveAllPlayers()
-    {
-        foreach (var player in PlayingMap.PlayersOnMap)
-        {
-            if (player.IsMainPlayer)
-            {
-                PlayingMap.MovePlayer(player, _mainPlayerMoveDirection);
-            }
-            else
-            {
-                PlayingMap.MovePlayer(player, GetBotMoveDirection(player));
-            }
-        }
-    }
-
-    private Vector2f GetBotMoveDirection(PlayerComponent bot)
-    {
-        ClosestGameObjectsToPlayerInfo info = PlayingMap.GetClosestGameObjectsInfo(bot);
-        
-        Vector2f closestFoodDirection = bot.GameObject.WorldPosition.CalculateNormalisedDirection(info.ClosestFood.WorldPosition);
-        Vector2f closestPlayerDirection = bot.GameObject.WorldPosition.CalculateNormalisedDirection(info.ClosestPlayer.WorldPosition);
-
-        if (info.FoodDistanceSqr < info.PlayerDistanceSqr)
-        {
-            return closestFoodDirection;
-        }
-        
-        // i dont like how it looks. so many dots
-        if (info.ClosestPlayer.GetComponent<FoodComponent>().NutritionValue < bot.GameObject.GetComponent<FoodComponent>().NutritionValue)
-        {
-            return closestPlayerDirection;
-        }
-        
-        if (info.ClosestPlayer.GetComponent<FoodComponent>().NutritionValue >= bot.GameObject.GetComponent<FoodComponent>().NutritionValue)
-        {
-            return (closestFoodDirection - closestPlayerDirection).Normalise();
-        }
-
-        return new Vector2f(0, 0);
     }
 
     public List<GameObject> GetGameObjectsToDisplay()

@@ -26,12 +26,15 @@ public class GameObject
 
     public float GetCollisionDepthSqr(GameObject other)
     {
-        float distanceSqr = (Shape.Position.X - other.Shape.Position.X) * (Shape.Position.X - other.Shape.Position.X) +
-                         (Shape.Position.Y - other.Shape.Position.Y) * (Shape.Position.Y - other.Shape.Position.Y);
+        var dx = Shape.Position.X - other.Shape.Position.X;
+        var dy = Shape.Position.Y - other.Shape.Position.Y;
+        float distanceSqr = dx * dx + dy * dy;
 
-        float radiusSum = Shape.Radius + other.Shape.Radius;
+        var rx = Shape.Radius;
+        var ry = other.Shape.Radius;
+        float radiusSqr = rx * rx + ry * ry;
 
-        return distanceSqr - radiusSum * radiusSum;
+        return distanceSqr - radiusSqr;
     }
 
     public T GetComponent<T>() where T : class, IComponent

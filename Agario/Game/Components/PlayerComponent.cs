@@ -1,11 +1,12 @@
 ﻿using Agario.Game.Interfaces;
+using Agario.Game.Utilities;
 using Agario.Infrastructure;
 using SFML.System;
 using Time = Agario.Infrastructure.Time;
 
 namespace Agario.Game.Components;
 
-public class PlayerComponent : IComponent
+public class PlayerComponent : IComponent, IPhysicsUpdatable
 {
     private float consumedFoodValueModifier = 1 / 4f;
     private float _minNutricionalValue = 10;
@@ -17,17 +18,23 @@ public class PlayerComponent : IComponent
     private float _minRadius = 10;
     private float _maxRadius = 250;
 
+    private PlayingMap _playingMap;
+
     public GameObject GameObject;
-    public FoodComponent FoodComponent { get; private set; }
+
+    private FoodComponent _foodComponent;
     
     public int FoodEaten { get; private set; }
     public int PlayersEaten { get; private set; }
     
     public bool IsMainPlayer { get; private set; }
     
-    public PlayerComponent(bool isMainPlayer)
+    public PlayerComponent(bool isMainPlayer, PlayingMap playingMap)
     {
+        GameCycle.GetInstance().RegisterObjectToPhysicsUpdate(this);
+        
         IsMainPlayer = isMainPlayer;
+        _playingMap = playingMap;
         _currentMoveSpeed = _maxMoveSpeed;
         FoodEaten = 0;
         PlayersEaten = 0;
@@ -39,9 +46,14 @@ public class PlayerComponent : IComponent
         
         if (!GameObject.HasComponent<FoodComponent>())
         {
-            FoodComponent = new FoodComponent(_minNutricionalValue);
-            GameObject.AddComponent(FoodComponent);
+            _foodComponent = new FoodComponent(_minNutricionalValue);
+            GameObject.AddComponent(_foodComponent);
         }
+    }
+
+    public void PhysicsUpdate()
+    {
+        Move();
     }
 
     public Vector2f CalculateNextWorldPosition(Vector2f direction)
@@ -49,12 +61,31 @@ public class PlayerComponent : IComponent
         return GameObject.WorldPosition + direction * _currentMoveSpeed * Time.DeltaTime;
     }
     
-    public void Move(Vector2f direction)
+    public void Move()
     {
-        GameObject.WorldPosition += direction * _currentMoveSpeed * Time.DeltaTime;
+        Vector2f moveDirection = new Vector2f(0, 0);
+        
+        if (IsMainPlayer)
+        {
+            Vector2f _mousePosition = GameCycle.GetInstance().InputEvents.MousePosition;
+            moveDirection = GameObject.WorldPosition.CalculateNormalisedDirection(_mousePosition);
+        }
+        else
+        {
+            moveDirection = GetBotMoveDirection();
+        }
+
+        moveDirection = _playingMap.AdjustMoveDirection(this, moveDirection);
+        
+        Move(moveDirection);
+    }
+
+    public void Move(Vector2f moveDirection)
+    {
+        GameObject.WorldPosition += moveDirection * _currentMoveSpeed * Time.DeltaTime;
         
         // recalculating scaling later here. Maybe in output, and not here?
-        GameObject.Shape.Position += direction * _currentMoveSpeed * Time.DeltaTime;
+        GameObject.Shape.Position += moveDirection * _currentMoveSpeed * Time.DeltaTime;
         //Shape.Position += direction * _moveSpeed * Time.DeltaTime;
     }
 
@@ -65,7 +96,7 @@ public class PlayerComponent : IComponent
         IncreaseRadius(foodComponent.NutritionValue);
         ReduceSpeed(foodComponent.NutritionValue);
         
-        FoodComponent.NutritionValue = GameObject.Shape.Radius;
+        _foodComponent.NutritionValue = GameObject.Shape.Radius;
 
         if (other.HasComponent<PlayerComponent>())
             PlayersEaten++;
@@ -92,5 +123,31 @@ public class PlayerComponent : IComponent
 
         if (_currentMoveSpeed < _minMoveSpeed)
             _currentMoveSpeed = _minMoveSpeed;
+    }
+
+    private Vector2f GetBotMoveDirection()
+    {
+        ClosestGameObjectsToPlayerInfo info = _playingMap.GetClosestGameObjectsInfo(GameObject);
+        
+        Vector2f closestFoodDirection = GameObject.WorldPosition.CalculateNormalisedDirection(info.ClosestFood.WorldPosition);
+        Vector2f closestPlayerDirection = GameObject.WorldPosition.CalculateNormalisedDirection(info.ClosestPlayer.WorldPosition);
+
+        if (info.FoodDistanceSqr < info.PlayerDistanceSqr)
+        {
+            return closestFoodDirection;
+        }
+        
+        // i dont like how it looks. so many dots
+        if (info.ClosestPlayer.GetComponent<FoodComponent>().NutritionValue < GameObject.GetComponent<FoodComponent>().NutritionValue)
+        {
+            return closestPlayerDirection;
+        }
+        
+        if (info.ClosestPlayer.GetComponent<FoodComponent>().NutritionValue >= GameObject.GetComponent<FoodComponent>().NutritionValue)
+        {
+            return (closestFoodDirection - closestPlayerDirection).Normalise();
+        }
+
+        return new Vector2f(0, 0);
     }
 }
