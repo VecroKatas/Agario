@@ -3,7 +3,7 @@ using SFML.Graphics;
 
 namespace Agario.Game.Interfaces;
 
-public interface IGameRules : IInitializeable, IStartable, IPhysicsUpdatable, IUpdatable
+public interface IGameRules : IInitializeable, IPhysicsUpdatable, IUpdatable
 {
     public PlayingMap PlayingMap { get; }
     public Action GameRestart { get; set; }

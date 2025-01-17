@@ -1,11 +1,9 @@
-﻿using System.IO.Pipes;
-using Agario.Game.Interfaces;
+﻿using Agario.Game.Interfaces;
 using Agario.Infrastructure;
-using SFML.Graphics;
 using SFML.System;
 using Time = Agario.Infrastructure.Time;
 
-namespace Agario.Game;
+namespace Agario.Game.Components;
 
 public class PlayerComponent : IComponent
 {

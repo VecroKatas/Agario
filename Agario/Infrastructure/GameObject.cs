@@ -1,5 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-using Agario.Game.Interfaces;
+﻿using Agario.Game.Interfaces;
 using SFML.Graphics;
 using SFML.System;
 

@@ -1,6 +1,4 @@
-﻿using Agario.Infrastructure;
-
-namespace Agario.Game.Interfaces;
+﻿namespace Agario.Game.Interfaces;
 
 public interface IPhysicsUpdatable
 {

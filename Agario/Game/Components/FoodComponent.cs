@@ -1,10 +1,7 @@
-﻿using Agario.Infrastructure;
-using Agario.Game.Factories;
-using Agario.Game.Interfaces;
-using SFML.Graphics;
-using SFML.System;
+﻿using Agario.Game.Interfaces;
+using Agario.Infrastructure;
 
-namespace Agario.Game;
+namespace Agario.Game.Components;
 
 public class FoodComponent : IComponent
 {

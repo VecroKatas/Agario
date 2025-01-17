@@ -1,4 +1,5 @@
-﻿using Agario.Infrastructure;
+﻿using Agario.Game.Components;
+using Agario.Infrastructure;
 using SFML.Graphics;
 using SFML.System;
 
@@ -15,7 +16,7 @@ public enum FoodColor
 
 public static class FoodFactory
 {
-    private static Dictionary<FoodColor, Color> FoodColors = new Dictionary<FoodColor, Color>()
+    private static readonly Dictionary<FoodColor, Color> FoodColors = new Dictionary<FoodColor, Color>()
     {
         {FoodColor.Default, Color.Black},
         {FoodColor.Green, Color.Green},

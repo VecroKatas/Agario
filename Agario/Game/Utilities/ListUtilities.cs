@@ -1,4 +1,4 @@
-﻿namespace Agario.Infrastructure;
+﻿namespace Agario.Game.Utilities;
 
 public static class ListUtilities
 {

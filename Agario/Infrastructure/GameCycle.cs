@@ -1,7 +1,6 @@
 ﻿using Agario.Game;
 using Agario.Game.Interfaces;
 using SFML.Graphics;
-using SFML.System;
 
 namespace Agario.Infrastructure;
 
@@ -16,9 +15,9 @@ public class GameCycle
 
     private IGameRules _gameRules;
 
-    private List<IInitializeable> ObjectsToInitialize;
-    private List<IPhysicsUpdatable> ObjectsToPhysicsUpdate;
-    private List<IUpdatable> ObjectsToUpdate;
+    private List<IInitializeable> _objectsToInitialize;
+    private List<IPhysicsUpdatable> _objectsToPhysicsUpdate;
+    private List<IUpdatable> _objectsToUpdate;
     
     private Input _input;
     private Output _output;
@@ -32,42 +31,38 @@ public class GameCycle
 
     private void InitInterfaceLists()
     {
-        ObjectsToInitialize = new List<IInitializeable>();
-        ObjectsToPhysicsUpdate = new List<IPhysicsUpdatable>();
-        ObjectsToUpdate = new List<IUpdatable>();
+        _objectsToInitialize = new List<IInitializeable>();
+        _objectsToPhysicsUpdate = new List<IPhysicsUpdatable>();
+        _objectsToUpdate = new List<IUpdatable>();
     }
 
     public static GameCycle GetInstance()
     {
-        if (_instance == null)
-        {
-            _instance = new GameCycle();
-        }
-        return _instance;
+        return _instance ??= new GameCycle();
     }
     
     public void RegisterObjectToInitialize(IInitializeable obj)
     {
-        if (ObjectsToInitialize.Contains(obj))
+        if (_objectsToInitialize.Contains(obj))
             return;
         
-        ObjectsToInitialize.Add(obj);
+        _objectsToInitialize.Add(obj);
     }
 
     public void RegisterObjectToUpdate(IUpdatable obj)
     {
-        if (ObjectsToUpdate.Contains(obj))
+        if (_objectsToUpdate.Contains(obj))
             return;
         
-        ObjectsToUpdate.Add(obj);
+        _objectsToUpdate.Add(obj);
     }
     
     public void RegisterObjectToPhysicsUpdate(IPhysicsUpdatable obj)
     {
-        if (ObjectsToPhysicsUpdate.Contains(obj))
+        if (_objectsToPhysicsUpdate.Contains(obj))
             return;
         
-        ObjectsToPhysicsUpdate.Add(obj);
+        _objectsToPhysicsUpdate.Add(obj);
     }
 
     public void Initialization(RenderWindow renderWindow, IGameRules gameRules)
@@ -88,7 +83,7 @@ public class GameCycle
     
     private void InitObjects()
     {
-        foreach (var obj in ObjectsToInitialize)
+        foreach (var obj in _objectsToInitialize)
         {
             obj.Initialize();
         }
@@ -132,7 +127,7 @@ public class GameCycle
  
     private void Physics()
     {
-        foreach (var obj in ObjectsToPhysicsUpdate)
+        foreach (var obj in _objectsToPhysicsUpdate)
         {
             obj.PhysicsUpdate();
         }
@@ -140,7 +135,7 @@ public class GameCycle
     
     private void Logic()
     {
-        foreach (var obj in ObjectsToUpdate)
+        foreach (var obj in _objectsToUpdate)
         {
             obj.Update();
         }

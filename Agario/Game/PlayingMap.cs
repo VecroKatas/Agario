@@ -1,7 +1,8 @@
-﻿using Agario.Game.Factories;
+﻿using Agario.Game.Components;
+using Agario.Game.Factories;
 using Agario.Game.Interfaces;
+using Agario.Game.Utilities;
 using Agario.Infrastructure;
-using SFML.Graphics;
 using SFML.System;
 
 namespace Agario.Game;
@@ -22,8 +23,8 @@ public class PlayingMap : IInitializeable, IPhysicsUpdatable
     
     private const float AllowedCollisionDepthModifierSqr = 3f;
 
-    private float playerDefaultRadius = 10;
-    private float foodDefaultRadius = 4;
+    private const float PlayerDefaultRadius = 10;
+    private const float FoodDefaultRadius = 4;
 
     public List<GameObject> GameObjectsToDisplay;
     public List<GameObject> GameObjectsOnMap;
@@ -69,7 +70,7 @@ public class PlayingMap : IInitializeable, IPhysicsUpdatable
     {
         Vector2f worldPosition = new Vector2f(MathF.Abs(GetRandomMaxAbs1Float()) * Width, MathF.Abs(GetRandomMaxAbs1Float()) * Height);
         
-        GameObject newPlayer = PlayerFactory.CreatePlayer(isMainPlayer, playerDefaultRadius, worldPosition);
+        GameObject newPlayer = PlayerFactory.CreatePlayer(isMainPlayer, PlayerDefaultRadius, worldPosition);
         
         GameObjectsToDisplay.Add(newPlayer);
         GameObjectsOnMap.Add(newPlayer);
@@ -85,12 +86,12 @@ public class PlayingMap : IInitializeable, IPhysicsUpdatable
         // rewrite with GetProperCoords method
         Vector2f worldPosition = new Vector2f(MathF.Abs(GetRandomMaxAbs1Float()) * Width * .99f, MathF.Abs(GetRandomMaxAbs1Float()) * Height * .99f);
 
-        if (worldPosition.X < foodDefaultRadius)
+        if (worldPosition.X < FoodDefaultRadius)
             worldPosition.X = Width * .99f;
-        if (worldPosition.Y < foodDefaultRadius)
+        if (worldPosition.Y < FoodDefaultRadius)
             worldPosition.Y = Height * .99f;
         
-        GameObject newFood = FoodFactory.CreateFood(foodDefaultRadius, nutritionValue, worldPosition);
+        GameObject newFood = FoodFactory.CreateFood(FoodDefaultRadius, nutritionValue, worldPosition);
         
         GameObjectsToDisplay.Add(newFood);
         GameObjectsOnMap.Add(newFood);

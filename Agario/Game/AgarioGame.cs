@@ -1,6 +1,8 @@
-﻿using Agario.Infrastructure;
+﻿using Agario.Game.Components;
+using Agario.Infrastructure;
 using Agario.Game.Factories;
 using Agario.Game.Interfaces;
+using Agario.Game.Utilities;
 using SFML.Graphics;
 using SFML.System;
 using Time = Agario.Infrastructure.Time;
@@ -33,17 +35,17 @@ public class AgarioGame : IGameRules
     private Vector2f _mainPlayerMoveDirection;
     private bool _isMainPlayerAlive = true;
 
-    private TextOnDisplay gameOverText;
-    private TextOnDisplay statsText;
-    private TextOnDisplay timeUntilRestartText;
+    private TextOnDisplay _gameOverText;
+    private TextOnDisplay _statsText;
+    private TextOnDisplay _timeUntilRestartText;
     
-    private Font textFont;
-    private string solutionPath;
-    private string localFontPath = "\\Fonts\\ARIAL.TTF";
+    private Font _textFont;
+    private string _solutionPath;
+    private const string LocalFontPath = "\\Fonts\\ARIAL.TTF";
 
     private float _restartTimePassed;
 
-    private GameCycle _gameCycleInstance;
+    private readonly GameCycle _gameCycleInstance;
     
     public AgarioGame()
     {
@@ -66,21 +68,20 @@ public class AgarioGame : IGameRules
 
         _restartTimePassed = 0;
         
-        solutionPath = GetSolutionPath();
+        _solutionPath = GetSolutionPath();
         
-        textFont = new Font(solutionPath + localFontPath);
+        _textFont = new Font(_solutionPath + LocalFontPath);
 
         RenderWindow renderWindow = _gameCycleInstance.RenderWindow;
         
-        gameOverText = InitText("Game over!", 50, new Color(180, 180, 180), new Vector2f(renderWindow.Size.X * .41f, renderWindow.Size.Y * .4f));
-        statsText = InitText("Default stats", 30, new Color(160, 160, 160), new Vector2f(renderWindow.Size.X * .43f, renderWindow.Size.Y * .5f));
-        timeUntilRestartText = InitText("Restart time", 40, new Color(180, 180, 180), new Vector2f(renderWindow.Size.X * .38f, renderWindow.Size.Y * .7f));
+        _gameOverText = InitText("Game over!", 50, new Color(180, 180, 180), new Vector2f(renderWindow.Size.X * .41f, renderWindow.Size.Y * .4f));
+        _statsText = InitText("Default stats", 30, new Color(160, 160, 160), new Vector2f(renderWindow.Size.X * .43f, renderWindow.Size.Y * .5f));
+        _timeUntilRestartText = InitText("Restart time", 40, new Color(180, 180, 180), new Vector2f(renderWindow.Size.X * .38f, renderWindow.Size.Y * .7f));
     }
     
     private void GeneratePlayers()
     {
-        if (MainPlayer == null)
-            MainPlayer = PlayingMap.CreatePlayer(true);
+        MainPlayer ??= PlayingMap.CreatePlayer(true);
 
         MainPlayer.GetComponent<FoodComponent>().OnBeingEaten += MainPlayerDied;
         
@@ -96,11 +97,6 @@ public class AgarioGame : IGameRules
         {
             PlayingMap.CreateFood(_random.Next(1, Enum.GetNames(typeof(FoodColor)).Length));
         }
-    }
-
-    public void Start()
-    {
-        
     }
 
     public void PhysicsUpdate()
@@ -189,9 +185,9 @@ public class AgarioGame : IGameRules
             ? new List<Text>()
             : new List<Text>()
             {
-                gameOverText.TextObj,
-                statsText.TextObj,
-                timeUntilRestartText.TextObj
+                _gameOverText.TextObj,
+                _statsText.TextObj,
+                _timeUntilRestartText.TextObj
             };
     }
     
@@ -211,7 +207,7 @@ public class AgarioGame : IGameRules
             Color = color
         };
         
-        textOnDisplay.TextObj = new Text(content, textFont, textOnDisplay.FontSize);
+        textOnDisplay.TextObj = new Text(content, _textFont, textOnDisplay.FontSize);
         textOnDisplay.TextObj.FillColor = textOnDisplay.Color;
         textOnDisplay.TextObj.Origin = new Vector2f(textOnDisplay.FontSize / 2f, textOnDisplay.FontSize / 2f);
         textOnDisplay.TextObj.Position = position;
@@ -230,19 +226,19 @@ public class AgarioGame : IGameRules
                          "Food eaten: " + MainPlayer.GetComponent<PlayerComponent>().FoodEaten + "\n" +
                          "Players eaten: " + MainPlayer.GetComponent<PlayerComponent>().PlayersEaten;
 
-        statsText = InitText(content, statsText);
+        _statsText = InitText(content, _statsText);
     }
     
     private void UpdateUntilRestartText(float timeUntilRestart)
     {
         string content = "Game restarts in: " + timeUntilRestart.ToString("0.00") + "s";
 
-        timeUntilRestartText = InitText(content, timeUntilRestartText);
+        _timeUntilRestartText = InitText(content, _timeUntilRestartText);
     }
     
-    string? GetSolutionPath()
+    string GetSolutionPath()
     {
-        string? currentDirectory = Directory.GetCurrentDirectory();
+        string currentDirectory = Directory.GetCurrentDirectory();
 
         while (!string.IsNullOrEmpty(currentDirectory))
         {
@@ -251,9 +247,9 @@ public class AgarioGame : IGameRules
                 return currentDirectory;
             }
 
-            currentDirectory = Directory.GetParent(currentDirectory)?.FullName;
+            currentDirectory = Directory.GetParent(currentDirectory).FullName;
         }
 
-        return null;
+        return "";
     }
 }

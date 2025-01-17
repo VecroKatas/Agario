@@ -1,4 +1,5 @@
-﻿using Agario.Infrastructure;
+﻿using Agario.Game;
+using Agario.Infrastructure;
 
-Boot boot = new Boot();
+Boot boot = new Boot(new AgarioGame());
 boot.StartGame();

@@ -1,8 +1,5 @@
-﻿using System.Reflection.Metadata.Ecma335;
-using Agario.Game;
-using Agario.Game.Interfaces;
+﻿using Agario.Game.Interfaces;
 using SFML.Graphics;
-using SFML.System;
 
 namespace Agario.Infrastructure;
 
@@ -15,10 +12,7 @@ public class Output : IInitializeable
         _renderWindow = renderWindow;
     }
 
-    public void Initialize()
-    {
-        
-    }
+    public void Initialize() { }
 
     public void Display()
     {
