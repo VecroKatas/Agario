@@ -148,6 +148,8 @@ public class GameCycle
         InitObjects();
     }
 
+    public GameObject GetGameObjectToFocusOn() => _gameRules.GetGameObjectToFocusOn();
+
     public List<GameObject> GetGameObjectsToDisplay() => _gameRules.GetGameObjectsToDisplay();
     
     public List<Text> GetTextsToDisplay() => _gameRules.GetTextsToDisplay();

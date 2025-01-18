@@ -2,7 +2,6 @@
 using Agario.Infrastructure;
 using Agario.Game.Factories;
 using Agario.Game.Interfaces;
-using Agario.Game.Utilities;
 using SFML.Graphics;
 using SFML.System;
 using Time = Agario.Infrastructure.Time;
@@ -18,8 +17,8 @@ public struct TextOnDisplay
 
 public class AgarioGame : IGameRules
 {
-    private const int MAX_FOOD_AMOUNT = 200;
-    private const int MAX_PLAYERS_AMOUNT = 10;
+    private const int MAX_FOOD_AMOUNT = 400;
+    private const int MAX_PLAYERS_AMOUNT = 20;
     
     private const float SecondsAfterGameOver = 4f;
     
@@ -27,7 +26,7 @@ public class AgarioGame : IGameRules
     
     public PlayingMap PlayingMap { get; private set; }
     
-    public GameObject MainPlayer { get; private set; } = null;
+    private GameObject MainPlayer { get; set; } = null;
 
     public Action GameRestart { get; set; }
     
@@ -123,6 +122,11 @@ public class AgarioGame : IGameRules
                 GameRestart.Invoke();
             }
         }
+    }
+
+    public GameObject GetGameObjectToFocusOn()
+    {
+        return _isMainPlayerAlive ? MainPlayer : null;
     }
 
     public List<GameObject> GetGameObjectsToDisplay()

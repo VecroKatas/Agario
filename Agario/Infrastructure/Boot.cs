@@ -12,7 +12,7 @@ public class Boot
 
     public Boot(IGameRules gameRules)
     {
-        _renderWindow = new RenderWindow(new VideoMode(1800, 900), "Agario");
+        _renderWindow = new RenderWindow(new VideoMode(PlayingMap.Width, PlayingMap.Height), "Agario");
         _gameRules = gameRules;
     }
 

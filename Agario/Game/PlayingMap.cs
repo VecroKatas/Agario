@@ -18,8 +18,8 @@ public struct ClosestGameObjectsToPlayerInfo
 
 public class PlayingMap : IInitializeable, IPhysicsUpdatable
 {
-    public readonly uint Width = 1800;
-    public readonly uint Height = 900;
+    public static readonly uint Width = 1800;
+    public static readonly uint Height = 900;
     
     private const float AllowedCollisionDepthModifierSqr = 1.5f;
 
