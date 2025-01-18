@@ -33,6 +33,6 @@ public static class Vector2fUtilities
 
     public static Vector2f GetRandomSmallVector()
     {
-        return new (_random.Next(101) / 100f, _random.Next(101) / 100f);
+        return new (_random.Next(100001) / 100000f, _random.Next(100001) / 100000f);
     }
 }

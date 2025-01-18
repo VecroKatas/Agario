@@ -28,6 +28,9 @@ public class PlayerComponent : IComponent, IPhysicsUpdatable
     public int PlayersEaten { get; private set; }
     
     public bool IsMainPlayer { get; private set; }
+
+    public Action SizeIncreased { get; set; }
+    private float _lastEatenValue = 0;
     
     public PlayerComponent(bool isMainPlayer, PlayingMap playingMap)
     {
@@ -53,7 +56,8 @@ public class PlayerComponent : IComponent, IPhysicsUpdatable
 
     public void PhysicsUpdate()
     {
-        Move();
+        if (_playingMap.SimulationGoing)
+            Move();
     }
 
     public Vector2f CalculateNextWorldPosition(Vector2f direction)
@@ -68,7 +72,7 @@ public class PlayerComponent : IComponent, IPhysicsUpdatable
         if (IsMainPlayer)
         {
             Vector2f _mousePosition = GameCycle.GetInstance().InputEvents.MousePosition;
-            moveDirection = GameObject.WorldPosition.CalculateNormalisedDirection(_mousePosition);
+            moveDirection = GameCycle.GetInstance().GetScreenCenter().CalculateNormalisedDirection(_mousePosition);
         }
         else
         {
@@ -103,6 +107,9 @@ public class PlayerComponent : IComponent, IPhysicsUpdatable
         else
             FoodEaten++;
         
+        if (IsMainPlayer)
+            SizeIncreased.Invoke();
+        
         foodComponent.BeingEaten();
     }
 
@@ -110,6 +117,7 @@ public class PlayerComponent : IComponent, IPhysicsUpdatable
     {
         if (GameObject.Shape.Radius < _maxRadius)
         {
+            _lastEatenValue = delta * consumedFoodValueModifier;
             GameObject.Shape.Radius += delta * consumedFoodValueModifier;
             GameObject.Shape.Origin = new Vector2f(GameObject.Shape.Radius, GameObject.Shape.Radius);
         }
@@ -117,12 +125,12 @@ public class PlayerComponent : IComponent, IPhysicsUpdatable
 
     private void ReduceSpeed(float valueConsumed)
     {
-        float difference = valueConsumed / (_maxRadius - _minRadius) * consumedFoodValueModifier;
-        
-        _currentMoveSpeed -= difference * (_maxMoveSpeed - _minMoveSpeed);
-
         if (_currentMoveSpeed < _minMoveSpeed)
-            _currentMoveSpeed = _minMoveSpeed;
+        {
+            float difference = valueConsumed / (_maxRadius - _minRadius) * consumedFoodValueModifier;
+        
+            _currentMoveSpeed -= difference * (_maxMoveSpeed - _minMoveSpeed);            
+        }
     }
 
     private Vector2f GetBotMoveDirection()
@@ -149,5 +157,10 @@ public class PlayerComponent : IComponent, IPhysicsUpdatable
         }
 
         return new Vector2f(0, 0);
+    }
+
+    public float GetSizeModifier()
+    {
+        return 1 + (_lastEatenValue) / (_maxMoveSpeed - _minMoveSpeed);
     }
 }

@@ -18,8 +18,8 @@ public struct ClosestGameObjectsToPlayerInfo
 
 public class PlayingMap : IInitializeable, IPhysicsUpdatable
 {
-    public static readonly uint Width = 1800;
-    public static readonly uint Height = 900;
+    public static readonly uint Width = 5000;
+    public static readonly uint Height = 5000;
     
     private const float AllowedCollisionDepthModifierSqr = 1.5f;
 
@@ -37,7 +37,7 @@ public class PlayingMap : IInitializeable, IPhysicsUpdatable
     private FoodFactory _foodFactory;
     private PlayerFactory _playerFactory;
 
-    private bool _simulationGoing = false;
+    public bool SimulationGoing = false;
     
     public PlayingMap() 
     { 
@@ -57,17 +57,17 @@ public class PlayingMap : IInitializeable, IPhysicsUpdatable
 
     public void StartSimulation()
     {
-        _simulationGoing = true;
+        SimulationGoing = true;
     }
 
     public void StopSimulation()
     {
-        _simulationGoing = false;
+        SimulationGoing = false;
     }
 
     public void PhysicsUpdate()
     {
-        if (_simulationGoing)
+        if (SimulationGoing)
             HandleCollisions();
     }
 

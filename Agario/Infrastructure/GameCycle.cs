@@ -1,6 +1,8 @@
 ﻿using Agario.Game;
 using Agario.Game.Interfaces;
 using SFML.Graphics;
+using SFML.System;
+using SFML.Window;
 
 namespace Agario.Infrastructure;
 
@@ -153,6 +155,11 @@ public class GameCycle
     public List<GameObject> GetGameObjectsToDisplay() => _gameRules.GetGameObjectsToDisplay();
     
     public List<Text> GetTextsToDisplay() => _gameRules.GetTextsToDisplay();
+
+    public Vector2f GetScreenCenter()
+    {
+        return new Vector2f(VideoMode.DesktopMode.Width / 2, VideoMode.DesktopMode.Height / 2);
+    }
 
     private void Output()
     {

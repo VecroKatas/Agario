@@ -17,8 +17,8 @@ public struct TextOnDisplay
 
 public class AgarioGame : IGameRules
 {
-    private const int MAX_FOOD_AMOUNT = 400;
-    private const int MAX_PLAYERS_AMOUNT = 20;
+    private const int MAX_FOOD_AMOUNT = 1000;
+    private const int MAX_PLAYERS_AMOUNT = 30;
     
     private const float SecondsAfterGameOver = 4f;
     
