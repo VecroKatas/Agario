@@ -78,9 +78,7 @@ public class AgarioGame : IGameRules
     
     private void GeneratePlayers()
     {
-        MainPlayer ??= PlayingMap.CreatePlayer(true);
-
-        MainPlayer.GetComponent<FoodComponent>().OnBeingEaten += MainPlayerDied;
+        MainPlayer ??= CreateMainPLayer();
         
         while (PlayingMap.PlayersOnMap.Count < MAX_PLAYERS_AMOUNT)
         {
@@ -94,6 +92,15 @@ public class AgarioGame : IGameRules
         {
             PlayingMap.CreateFood(_random.Next(1, Enum.GetNames(typeof(FoodColor)).Length));
         }
+    }
+
+    private GameObject CreateMainPLayer()
+    {
+        GameObject mainPlayer = PlayingMap.CreatePlayer(true);
+
+        mainPlayer.GetComponent<FoodComponent>().OnBeingEaten += MainPlayerDied;
+
+        return mainPlayer;
     }
 
     public void PhysicsUpdate()
@@ -112,7 +119,6 @@ public class AgarioGame : IGameRules
         {
             if (_restartTimePassed < SecondsAfterGameOver)
             {
-                UpdateStatsText();
                 UpdateUntilRestartText(SecondsAfterGameOver - _restartTimePassed);
 
                 _restartTimePassed += Time.DeltaTime;
@@ -149,7 +155,11 @@ public class AgarioGame : IGameRules
     private void MainPlayerDied()
     {
         _isMainPlayerAlive = false;
+        
+        UpdateStatsText();
 
+        MainPlayer = null;
+        
         PlayingMap.StopSimulation();
         PlayingMap.Reset();
     }

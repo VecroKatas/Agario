@@ -12,7 +12,7 @@ public class Output : IInitializeable
     private View _view;
     private GameObject _focusObject;
     private float _reverseZoomModifier = 1;
-    private bool _zoomedIn = true;
+    private bool _zoomedOut = true;
 
     public Output(RenderWindow renderWindow)
     {
@@ -27,25 +27,25 @@ public class Output : IInitializeable
         _renderWindow.SetView(_view);
         _view.Center = _focusObject.Shape.Position + _focusObject.Shape.Origin;
 
-        _focusObject.GetComponent<PlayerComponent>().SizeIncreased += () => ZoomOut();
+        _focusObject.GetComponent<PlayerComponent>().SizeIncreased += ZoomOut;
     }
 
     public void Display()
     {
         _renderWindow.Clear(new Color(20, 20, 20));
+        
+        _focusObject = GameCycle.GetInstance().GetGameObjectToFocusOn();
 
         if (_focusObject != null)
         {
             _view.Center = _focusObject.Shape.Position + _focusObject.Shape.Origin;
-            if (_zoomedIn) 
-                _zoomedIn = false;
         }
         else
         {
-            _view.Center = GameCycle.GetInstance().GetScreenCenter();
+            if (_zoomedOut) 
+                ZoomIn();
             
-            if (!_zoomedIn) 
-                ZoomOut();
+            _view.Center = GameCycle.GetInstance().GetScreenCenter();
         }
         
         _renderWindow.SetView(_view);
@@ -74,8 +74,15 @@ public class Output : IInitializeable
 
         _reverseZoomModifier *= zoom;
 
-        _zoomedIn = true;
+        _zoomedOut = true;
         
         _view.Zoom(zoom);
+    }
+
+    private void ZoomIn()
+    {
+        _view.Zoom(_reverseZoomModifier);
+        
+        _zoomedOut = false;
     }
 }
