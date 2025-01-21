@@ -9,6 +9,7 @@ namespace Agario.Infrastructure;
 public struct InputEvents
 {
     public Vector2f MousePosition;
+    public bool FPressed;
 }
 
 public class Input : IInitializeable
@@ -29,10 +30,16 @@ public class Input : IInitializeable
 
     public InputEvents GetInputEvents()
     {
-        return new InputEvents()
+        InputEvents input = new InputEvents()
         {
-            MousePosition = GetMousePosition()
+            MousePosition = GetMousePosition(),
+            FPressed = false
         };
+
+        if (Keyboard.IsKeyPressed(Keyboard.Key.F))
+            input.FPressed = true;
+
+        return input;
     }
 
     private Vector2f GetMousePosition()

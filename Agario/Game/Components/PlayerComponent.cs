@@ -57,7 +57,23 @@ public class PlayerComponent : IComponent, IPhysicsUpdatable
     public void PhysicsUpdate()
     {
         if (_playingMap.SimulationGoing)
+        {
             Move();
+            PlayerSwap();
+        }
+    }
+
+    private void PlayerSwap()
+    {
+        bool isFPressed = GameCycle.GetInstance().InputEvents.FPressed;
+
+        if (isFPressed && IsMainPlayer)
+        {
+            GameObject closestPlayer = _playingMap.GetClosestGameObjectsInfo(GameObject).ClosestPlayer;
+
+            (closestPlayer.WorldPosition, GameObject.WorldPosition) = (GameObject.WorldPosition, closestPlayer.WorldPosition);
+            (closestPlayer.Shape.Position, GameObject.Shape.Position) = (GameObject.Shape.Position, closestPlayer.Shape.Position);
+        }
     }
 
     public Vector2f CalculateNextWorldPosition(Vector2f direction)
@@ -90,6 +106,7 @@ public class PlayerComponent : IComponent, IPhysicsUpdatable
         
         // recalculating scaling later here. Maybe in output, and not here?
         GameObject.Shape.Position += moveDirection * _currentMoveSpeed * Time.DeltaTime;
+        //GameObject.Shape.Position += GameObject.WorldPosition;
         //Shape.Position += direction * _moveSpeed * Time.DeltaTime;
     }
 
