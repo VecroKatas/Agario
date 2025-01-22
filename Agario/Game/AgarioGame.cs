@@ -33,7 +33,7 @@ public class AgarioGame : IGameRules
             {
                 return PlayingMap.PlayersOnMap.First(p => p.IsMainPlayer).GameObject;
             }
-            catch (InvalidOperationException e)
+            catch (InvalidOperationException)
             {
                 return null;
             }

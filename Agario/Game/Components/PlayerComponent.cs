@@ -8,7 +8,7 @@ namespace Agario.Game.Components;
 
 public class PlayerComponent : IComponent, IPhysicsUpdatable
 {
-    private float consumedFoodValueModifier = 1 / 4f;
+    private float _consumedFoodValueModifier = 1 / 4f;
     private float _minNutricionalValue = 10;
     
     private float _maxMoveSpeed = 200;
@@ -98,12 +98,12 @@ public class PlayerComponent : IComponent, IPhysicsUpdatable
     
     public void Move()
     {
-        Vector2f moveDirection = new Vector2f(0, 0);
+        Vector2f moveDirection;
         
         if (IsMainPlayer)
         {
-            Vector2f _mousePosition = GameCycle.GetInstance().InputEvents.MousePosition;
-            moveDirection = GameCycle.GetInstance().GetScreenCenter().CalculateNormalisedDirection(_mousePosition);
+            Vector2f mousePosition = GameCycle.GetInstance().InputEvents.MousePosition;
+            moveDirection = GameCycle.GetInstance().GetScreenCenter().CalculateNormalisedDirection(mousePosition);
         }
         else
         {
@@ -149,8 +149,8 @@ public class PlayerComponent : IComponent, IPhysicsUpdatable
     {
         if (GameObject.Shape.Radius < _maxRadius)
         {
-            _lastEatenValue = delta * consumedFoodValueModifier;
-            GameObject.Shape.Radius += delta * consumedFoodValueModifier;
+            _lastEatenValue = delta * _consumedFoodValueModifier;
+            GameObject.Shape.Radius += delta * _consumedFoodValueModifier;
             GameObject.Shape.Origin = new Vector2f(GameObject.Shape.Radius, GameObject.Shape.Radius);
         }
     }
@@ -159,7 +159,7 @@ public class PlayerComponent : IComponent, IPhysicsUpdatable
     {
         if (_currentMoveSpeed < _minMoveSpeed)
         {
-            float difference = valueConsumed / (_maxRadius - _minRadius) * consumedFoodValueModifier;
+            float difference = valueConsumed / (_maxRadius - _minRadius) * _consumedFoodValueModifier;
         
             _currentMoveSpeed -= difference * (_maxMoveSpeed - _minMoveSpeed);            
         }

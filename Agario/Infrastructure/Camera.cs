@@ -8,15 +8,15 @@ public class Camera
     private static readonly FloatRect DEFAULT_VIEW_PARAMS =
         new FloatRect(GameCycle.GetInstance().GetScreenCenter().X / 2, GameCycle.GetInstance().GetScreenCenter().Y / 2, 1800, 900);
     
-    private GameObject _focusObject;
-    public GameObject FocusObject
+    private GameObject? _focusObject;
+    public GameObject? FocusObject
     {
         get => _focusObject;
         set
         {
             if (value == null)
             {
-                _focusObject = value;
+                _focusObject = null;
                 return;
             }
             
