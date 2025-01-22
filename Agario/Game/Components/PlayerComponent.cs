@@ -18,6 +18,9 @@ public class PlayerComponent : IComponent, IPhysicsUpdatable
     private float _minRadius = 10;
     private float _maxRadius = 250;
 
+    private float _swapCooldown = .5f;
+    private float _swapTimer = float.MaxValue;
+
     private PlayingMap _playingMap;
 
     public GameObject GameObject;
@@ -59,7 +62,11 @@ public class PlayerComponent : IComponent, IPhysicsUpdatable
         if (_playingMap.SimulationGoing)
         {
             Move();
-            PlayerSwap();
+
+            if (_swapTimer > _swapCooldown)
+                PlayerSwap();
+            else
+                UpdateSwapTimer();
         }
     }
 
@@ -69,11 +76,19 @@ public class PlayerComponent : IComponent, IPhysicsUpdatable
 
         if (isFPressed && IsMainPlayer)
         {
-            GameObject closestPlayer = _playingMap.GetClosestGameObjectsInfo(GameObject).ClosestPlayer;
+            PlayerComponent closestPlayerComponent = _playingMap.GetClosestGameObjectsInfo(GameObject).ClosestPlayer.GetComponent<PlayerComponent>();
 
-            (closestPlayer.WorldPosition, GameObject.WorldPosition) = (GameObject.WorldPosition, closestPlayer.WorldPosition);
-            (closestPlayer.Shape.Position, GameObject.Shape.Position) = (GameObject.Shape.Position, closestPlayer.Shape.Position);
+            IsMainPlayer = false;
+            closestPlayerComponent.IsMainPlayer = true;
+
+            _swapTimer = 0;
+            closestPlayerComponent._swapTimer = 0;
         }
+    }
+
+    private void UpdateSwapTimer()
+    {
+        _swapTimer += Time.DeltaTime;
     }
 
     public Vector2f CalculateNextWorldPosition(Vector2f direction)

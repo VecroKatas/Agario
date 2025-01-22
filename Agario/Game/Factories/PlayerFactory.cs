@@ -14,17 +14,18 @@ public class PlayerFactory
 
         return new Color((byte)random.Next(50, 200), (byte)random.Next(50, 200), (byte)random.Next(50, 200));
     }
-    
+
+    private AgarioGame _agarioGame;
     private PlayingMap _playingMap;
 
-    public PlayerFactory(PlayingMap playingMap)
+    public PlayerFactory(PlayingMap playingMap, AgarioGame agarioGame)
     {
         _playingMap = playingMap;
+        _agarioGame = agarioGame;
     }
 
     public GameObject CreatePlayer(bool isMainPlayer, float defaultRadius)
     {
-        
         Vector2f worldPosition = GetValidSpawnCoords();
         
         CircleShape circle = new CircleShape(defaultRadius);
@@ -54,6 +55,7 @@ public class PlayerFactory
         _playingMap.PlayersOnMap.Add(newPlayer.GetComponent<PlayerComponent>());
 
         newPlayer.GetComponent<FoodComponent>().OnBeingEaten += () => _playingMap.DeleteGameObject(newPlayer);
+        newPlayer.GetComponent<FoodComponent>().OnBeingEaten += () => _agarioGame.PlayerDied(newPlayer);
 
         return newPlayer;
     }

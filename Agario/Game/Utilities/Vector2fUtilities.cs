@@ -16,7 +16,6 @@ public static class Vector2fUtilities
         
         if (magnitude == 0)
         {
-            Console.WriteLine("Cannot normalize a zero vector.");
             return new (0, 0);
         }
 

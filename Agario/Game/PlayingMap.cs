@@ -34,15 +34,18 @@ public class PlayingMap : IInitializeable, IPhysicsUpdatable
 
     private Random _random = new Random();
 
+    private AgarioGame _agarioGame;
+
     private FoodFactory _foodFactory;
     private PlayerFactory _playerFactory;
 
     public bool SimulationGoing = false;
     
-    public PlayingMap() 
+    public PlayingMap(AgarioGame agarioGame) 
     { 
         GameCycle.GetInstance().RegisterObjectToInitialize(this);
         GameCycle.GetInstance().RegisterObjectToPhysicsUpdate(this);
+        _agarioGame = agarioGame;
     }
 
     public void Initialize()
@@ -52,7 +55,7 @@ public class PlayingMap : IInitializeable, IPhysicsUpdatable
         PlayersOnMap = new List<PlayerComponent>();
 
         _foodFactory = new FoodFactory(this);
-        _playerFactory = new PlayerFactory(this);
+        _playerFactory = new PlayerFactory(this, _agarioGame);
     }
 
     public void StartSimulation()

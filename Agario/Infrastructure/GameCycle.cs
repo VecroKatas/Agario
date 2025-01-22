@@ -14,6 +14,7 @@ public class GameCycle
     public InputEvents InputEvents;
     
     public RenderWindow RenderWindow { get; private set; }
+    public Camera WorldCamera { get; private set; }
 
     private IGameRules _gameRules;
 
@@ -71,7 +72,8 @@ public class GameCycle
     {
         RenderWindow = renderWindow;
         RenderWindow.Closed += WindowClosed;
-        
+
+        WorldCamera = new Camera();
         _input = new Input(renderWindow);
         _output = new Output(renderWindow);
         _gameRules = gameRules;
@@ -129,7 +131,7 @@ public class GameCycle
  
     private void Physics()
     {
-        foreach (var obj in _objectsToPhysicsUpdate)
+        foreach (var obj in new List<IPhysicsUpdatable>(_objectsToPhysicsUpdate))
         {
             obj.PhysicsUpdate();
         }
@@ -137,7 +139,7 @@ public class GameCycle
     
     private void Logic()
     {
-        foreach (var obj in _objectsToUpdate)
+        foreach (var obj in new List<IUpdatable>(_objectsToUpdate))
         {
             obj.Update();
         }
@@ -163,6 +165,7 @@ public class GameCycle
 
     private void Output()
     {
+        WorldCamera.FocusObject = GetGameObjectToFocusOn();
         _output.Display();
     }
 

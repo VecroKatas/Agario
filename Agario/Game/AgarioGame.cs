@@ -26,7 +26,23 @@ public class AgarioGame : IGameRules
     
     public PlayingMap PlayingMap { get; private set; }
     
-    private GameObject MainPlayer { get; set; } = null;
+    private GameObject MainPlayer { 
+        get 
+        {
+            try
+            {
+                return PlayingMap.PlayersOnMap.First(p => p.IsMainPlayer).GameObject;
+            }
+            catch (InvalidOperationException e)
+            {
+                return null;
+            }
+        }
+        set
+        {
+            PlayingMap.PlayersOnMap.First(p => p.IsMainPlayer).GameObject = value;
+        }
+    }
 
     public Action GameRestart { get; set; }
     
@@ -46,7 +62,7 @@ public class AgarioGame : IGameRules
     
     public AgarioGame()
     {
-        PlayingMap = new PlayingMap();
+        PlayingMap = new PlayingMap(this);
         
         _gameCycleInstance = GameCycle.GetInstance();
         
@@ -98,8 +114,6 @@ public class AgarioGame : IGameRules
     {
         GameObject mainPlayer = PlayingMap.CreatePlayer(true);
 
-        mainPlayer.GetComponent<FoodComponent>().OnBeingEaten += MainPlayerDied;
-
         return mainPlayer;
     }
 
@@ -129,6 +143,19 @@ public class AgarioGame : IGameRules
             }
         }
     }
+    
+    public void PlayerDied(GameObject player)
+    {
+        if (player.GetComponent<PlayerComponent>().IsMainPlayer)
+        {
+            _isMainPlayerAlive = false;
+
+            UpdateStatsText(player);
+
+            PlayingMap.StopSimulation();
+            PlayingMap.Reset();
+        }
+    }
 
     public GameObject GetGameObjectToFocusOn()
     {
@@ -150,18 +177,6 @@ public class AgarioGame : IGameRules
                 _statsText.TextObj,
                 _timeUntilRestartText.TextObj
             };
-    }
-    
-    private void MainPlayerDied()
-    {
-        _isMainPlayerAlive = false;
-        
-        UpdateStatsText();
-
-        MainPlayer = null;
-        
-        PlayingMap.StopSimulation();
-        PlayingMap.Reset();
     }
 
     private TextOnDisplay InitText(string content, uint fontSize, Color color, Vector2f position)
@@ -185,11 +200,11 @@ public class AgarioGame : IGameRules
         return InitText(content, copyFrom.FontSize, copyFrom.Color, copyFrom.TextObj.Position);
     }
 
-    private void UpdateStatsText()
+    private void UpdateStatsText(GameObject player)
     {
-        string content = "Your size: " + MainPlayer.Shape.Radius + "\n" +
-                         "Food eaten: " + MainPlayer.GetComponent<PlayerComponent>().FoodEaten + "\n" +
-                         "Players eaten: " + MainPlayer.GetComponent<PlayerComponent>().PlayersEaten;
+        string content = "Your size: " + player.Shape.Radius + "\n" +
+                         "Food eaten: " + player.GetComponent<PlayerComponent>().FoodEaten + "\n" +
+                         "Players eaten: " + player.GetComponent<PlayerComponent>().PlayersEaten;
 
         _statsText = InitText(content, _statsText);
     }
