@@ -26,7 +26,7 @@ public class PlayerFactory
 
     public GameObject CreatePlayer(bool isMainPlayer, float defaultRadius)
     {
-        Vector2f worldPosition = GetValidSpawnCoords();
+        Vector2f position = GetValidSpawnCoords();
         
         CircleShape circle = new CircleShape(defaultRadius);
         
@@ -36,7 +36,7 @@ public class PlayerFactory
         
         if (isMainPlayer)
         {
-            worldPosition = new Vector2f(PlayingMap.Width / 2, PlayingMap.Height / 2);
+            position = new Vector2f(PlayingMap.Width / 2, PlayingMap.Height / 2);
             newColor = new Color(200, 200, 200);
         }
         else
@@ -44,10 +44,10 @@ public class PlayerFactory
             newColor = GetRandomColor();
         }
         
-        circle.Position = worldPosition;
+        circle.Position = position;
         circle.FillColor = newColor;
 
-        GameObject newPlayer = new GameObject(circle, worldPosition);
+        GameObject newPlayer = new GameObject(circle);
         newPlayer.AddComponent(new PlayerComponent(isMainPlayer, _playingMap));
         
         _playingMap.GameObjectsToDisplay.Add(newPlayer);

@@ -93,7 +93,7 @@ public class PlayerComponent : IComponent, IPhysicsUpdatable
 
     public Vector2f CalculateNextWorldPosition(Vector2f direction)
     {
-        return GameObject.WorldPosition + direction * _currentMoveSpeed * Time.DeltaTime;
+        return GameObject.Shape.Position + direction * _currentMoveSpeed * Time.DeltaTime;
     }
     
     public void Move()
@@ -117,12 +117,7 @@ public class PlayerComponent : IComponent, IPhysicsUpdatable
 
     public void Move(Vector2f moveDirection)
     {
-        GameObject.WorldPosition += moveDirection * _currentMoveSpeed * Time.DeltaTime;
-        
-        // recalculating scaling later here. Maybe in output, and not here?
         GameObject.Shape.Position += moveDirection * _currentMoveSpeed * Time.DeltaTime;
-        //GameObject.Shape.Position += GameObject.WorldPosition;
-        //Shape.Position += direction * _moveSpeed * Time.DeltaTime;
     }
 
     public void EatFood(GameObject other)
@@ -169,9 +164,9 @@ public class PlayerComponent : IComponent, IPhysicsUpdatable
     {
         ClosestGameObjectsToPlayerInfo info = _playingMap.GetClosestGameObjectsInfo(GameObject);
         
-        Vector2f closestFoodDirection = GameObject.WorldPosition.CalculateNormalisedDirection(info.ClosestFood.WorldPosition);
-        Vector2f closestPlayerDirection = GameObject.WorldPosition.CalculateNormalisedDirection(info.ClosestPlayer.WorldPosition);
-
+        Vector2f closestFoodDirection = GameObject.Shape.Position.CalculateNormalisedDirection(info.ClosestFood.Shape.Position);
+        Vector2f closestPlayerDirection = GameObject.Shape.Position.CalculateNormalisedDirection(info.ClosestPlayer.Shape.Position);
+        
         if (info.FoodDistanceSqr < info.PlayerDistanceSqr)
         {
             return closestFoodDirection;

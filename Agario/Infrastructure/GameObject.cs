@@ -6,7 +6,6 @@ namespace Agario.Infrastructure;
 
 public class GameObject
 {
-    public Vector2f WorldPosition { get; set; }
     public CircleShape Shape { get; set; }
 
     private readonly Dictionary<Type, IComponent> _components;
@@ -17,11 +16,6 @@ public class GameObject
     {
         Shape = circle;
         _components = new();
-    }
-
-    public GameObject(CircleShape circle, Vector2f worldPosition) : this(circle)
-    {
-        WorldPosition = worldPosition;
     }
 
     public float GetCollisionDepthSqr(GameObject other)

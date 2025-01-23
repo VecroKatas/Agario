@@ -35,17 +35,17 @@ public class FoodFactory
 
     public GameObject CreateFood(float defaultRadius, int nutritionValue)
     {
-        Vector2f worldPosition = GetValidSpawnCoords();
+        Vector2f position = GetValidSpawnCoords();
         
         float radius = defaultRadius * .9f + defaultRadius / 5f * nutritionValue;
         
         CircleShape circle = new CircleShape(radius, (uint)nutritionValue + 2);
         
         circle.Origin = new Vector2f(radius, radius);
-        circle.Position = worldPosition;
+        circle.Position = position;
         circle.FillColor = FoodColors[(FoodColor)nutritionValue];
 
-        GameObject newGameObject = new GameObject(circle, worldPosition);
+        GameObject newGameObject = new GameObject(circle);
         newGameObject.AddComponent(new FoodComponent(nutritionValue));
         
         _playingMap.GameObjectsToDisplay.Add(newGameObject);

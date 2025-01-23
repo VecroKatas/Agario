@@ -126,14 +126,15 @@ public class PlayingMap : IInitializeable, IPhysicsUpdatable
         foreach (var player in PlayersOnMap)
         {
             Vector2f moveOutDirection = new Vector2f(0, 0);
-            if (player.GameObject.WorldPosition.X - player.GameObject.Shape.Radius < 0)
+            
+            if (player.GameObject.Shape.Position.X - player.GameObject.Shape.Radius < 0)
                 moveOutDirection.X = 1;
-            else if (player.GameObject.WorldPosition.X + player.GameObject.Shape.Radius > Width)
+            else if (player.GameObject.Shape.Position.X + player.GameObject.Shape.Radius > Width)
                 moveOutDirection.X = -1;
         
-            if (player.GameObject.WorldPosition.Y - player.GameObject.Shape.Radius < 0)
+            if (player.GameObject.Shape.Position.Y - player.GameObject.Shape.Radius < 0)
                 moveOutDirection.Y = 1;
-            else if (player.GameObject.WorldPosition.Y + player.GameObject.Shape.Radius > Height)
+            else if (player.GameObject.Shape.Position.Y + player.GameObject.Shape.Radius > Height)
                 moveOutDirection.Y = -1;
         
             player.Move(moveOutDirection);
