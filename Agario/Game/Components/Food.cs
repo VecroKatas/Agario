@@ -3,14 +3,14 @@ using Agario.Infrastructure;
 
 namespace Agario.Game.Components;
 
-public class FoodComponent : IComponent
+public class Food : IComponent
 {
     public float NutritionValue { get; set; }
     public Action OnBeingEaten;
 
     public GameObject GameObject;
 
-    public FoodComponent(float nutritionValue)
+    public Food(float nutritionValue)
     {
         NutritionValue = nutritionValue;
     }

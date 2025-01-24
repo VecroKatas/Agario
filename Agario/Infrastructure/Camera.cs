@@ -1,4 +1,5 @@
-﻿using Agario.Game.Components;
+﻿using Agario.Game;
+using Agario.Game.Components;
 using SFML.Graphics;
 
 namespace Agario.Infrastructure;
@@ -8,8 +9,8 @@ public class Camera
     private static readonly FloatRect DEFAULT_VIEW_PARAMS =
         new FloatRect(GameCycle.GetInstance().GetScreenCenter().X / 2, GameCycle.GetInstance().GetScreenCenter().Y / 2, 1800, 900);
     
-    private GameObject? _focusObject;
-    public GameObject? FocusObject
+    private PlayerGameObject? _focusObject;
+    public PlayerGameObject? FocusObject
     {
         get => _focusObject;
         set
@@ -25,11 +26,11 @@ public class Camera
             
             if (_focusObject != null)
             {
-                _focusObject.GetComponent<PlayerComponent>().SizeIncreased -= ZoomOut;
+                _focusObject.GetComponent<PlayerController>().MainPlayerSizeIncreased -= ZoomOut;
             }
         
             _focusObject = value;
-            _focusObject.GetComponent<PlayerComponent>().SizeIncreased += ZoomOut;
+            _focusObject.GetComponent<PlayerController>().MainPlayerSizeIncreased += ZoomOut;
         }
     }
 
@@ -61,7 +62,7 @@ public class Camera
 
     private void ZoomOut()
     {
-        float zoom = FocusObject.GetComponent<PlayerComponent>().GetSizeModifier();
+        float zoom = FocusObject.GetSizeModifier();
 
         _zoomedOut = true;
         

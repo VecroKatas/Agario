@@ -26,12 +26,12 @@ public class AgarioGame : IGameRules
     
     public PlayingMap PlayingMap { get; private set; }
     
-    private GameObject MainPlayer { 
+    private PlayerGameObject MainPlayer { 
         get 
         {
             try
             {
-                return PlayingMap.PlayersOnMap.First(p => p.IsMainPlayer).GameObject;
+                return PlayingMap.PlayersOnMap.First(p => p.IsMainPlayer).PlayerGameObject;
             }
             catch (InvalidOperationException)
             {
@@ -40,7 +40,7 @@ public class AgarioGame : IGameRules
         }
         set
         {
-            PlayingMap.PlayersOnMap.First(p => p.IsMainPlayer).GameObject = value;
+            PlayingMap.PlayersOnMap.First(p => p.IsMainPlayer).PlayerGameObject = value;
         }
     }
 
@@ -110,9 +110,9 @@ public class AgarioGame : IGameRules
         }
     }
 
-    private GameObject CreateMainPLayer()
+    private PlayerGameObject CreateMainPLayer()
     {
-        GameObject mainPlayer = PlayingMap.CreatePlayer(true);
+        PlayerGameObject mainPlayer = PlayingMap.CreatePlayer(true);
 
         return mainPlayer;
     }
@@ -144,9 +144,9 @@ public class AgarioGame : IGameRules
         }
     }
     
-    public void PlayerDied(GameObject player)
+    public void PlayerDied(PlayerGameObject player)
     {
-        if (player.GetComponent<PlayerComponent>().IsMainPlayer)
+        if (player.GetComponent<PlayerController>().IsMainPlayer)
         {
             _isMainPlayerAlive = false;
 
@@ -157,14 +157,14 @@ public class AgarioGame : IGameRules
         }
     }
 
-    public GameObject GetGameObjectToFocusOn()
+    public PlayerGameObject GetGameObjectToFocusOn()
     {
         return _isMainPlayerAlive ? MainPlayer : null;
     }
 
     public List<GameObject> GetGameObjectsToDisplay()
     {
-        return _isMainPlayerAlive ? PlayingMap.GameObjectsToDisplay : new List<GameObject>();
+        return _isMainPlayerAlive ? PlayingMap.GameObjectsOnMap : new List<GameObject>();
     }
     
     public List<Text> GetTextsToDisplay()
@@ -200,11 +200,11 @@ public class AgarioGame : IGameRules
         return InitText(content, copyFrom.FontSize, copyFrom.Color, copyFrom.TextObj.Position);
     }
 
-    private void UpdateStatsText(GameObject player)
+    private void UpdateStatsText(PlayerGameObject player)
     {
         string content = "Your size: " + player.Shape.Radius + "\n" +
-                         "Food eaten: " + player.GetComponent<PlayerComponent>().FoodEaten + "\n" +
-                         "Players eaten: " + player.GetComponent<PlayerComponent>().PlayersEaten;
+                         "Food eaten: " + player.FoodEaten + "\n" +
+                         "Players eaten: " + player.PlayersEaten;
 
         _statsText = InitText(content, _statsText);
     }

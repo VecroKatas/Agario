@@ -46,14 +46,13 @@ public class FoodFactory
         circle.FillColor = FoodColors[(FoodColor)nutritionValue];
 
         GameObject newGameObject = new GameObject(circle);
-        newGameObject.AddComponent(new FoodComponent(nutritionValue));
+        newGameObject.AddComponent(new Food(nutritionValue));
         
-        _playingMap.GameObjectsToDisplay.Add(newGameObject);
         _playingMap.GameObjectsOnMap.Add(newGameObject);
 
         _playingMap.FoodsOnMapCount++;
 
-        newGameObject.GetComponent<FoodComponent>().OnBeingEaten += () => _playingMap.DeleteGameObject(newGameObject);
+        newGameObject.GetComponent<Food>().OnBeingEaten += () => _playingMap.DeleteGameObject(newGameObject);
         
         return newGameObject;
     }

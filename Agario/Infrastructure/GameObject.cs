@@ -1,6 +1,5 @@
 ﻿using Agario.Game.Interfaces;
 using SFML.Graphics;
-using SFML.System;
 
 namespace Agario.Infrastructure;
 
@@ -8,7 +7,7 @@ public class GameObject
 {
     public CircleShape Shape { get; set; }
 
-    private readonly Dictionary<Type, IComponent> _components;
+    private  Dictionary<Type, IComponent> _components;
 
     protected GameObject() { }
     

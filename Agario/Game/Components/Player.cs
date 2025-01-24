@@ -1,4 +1,4 @@
-﻿using Agario.Game.Interfaces;
+﻿/*using Agario.Game.Interfaces;
 using Agario.Game.Utilities;
 using Agario.Infrastructure;
 using SFML.System;
@@ -6,7 +6,7 @@ using Time = Agario.Infrastructure.Time;
 
 namespace Agario.Game.Components;
 
-public class PlayerComponent : IComponent, IPhysicsUpdatable
+public class Player : IComponent, IPhysicsUpdatable
 {
     private float _consumedFoodValueModifier = 1 / 4f;
     private float _minNutricionalValue = 10;
@@ -25,7 +25,7 @@ public class PlayerComponent : IComponent, IPhysicsUpdatable
 
     public GameObject GameObject;
 
-    private FoodComponent _foodComponent;
+    private Food _food;
     
     public int FoodEaten { get; private set; }
     public int PlayersEaten { get; private set; }
@@ -35,7 +35,7 @@ public class PlayerComponent : IComponent, IPhysicsUpdatable
     public Action SizeIncreased { get; set; }
     private float _lastEatenValue = 0;
     
-    public PlayerComponent(bool isMainPlayer, PlayingMap playingMap)
+    public Player(bool isMainPlayer, PlayingMap playingMap)
     {
         GameCycle.GetInstance().RegisterObjectToPhysicsUpdate(this);
         
@@ -50,10 +50,10 @@ public class PlayerComponent : IComponent, IPhysicsUpdatable
     {
         GameObject = gameObject;
         
-        if (!GameObject.HasComponent<FoodComponent>())
+        if (!GameObject.HasComponent<Food>())
         {
-            _foodComponent = new FoodComponent(_minNutricionalValue);
-            GameObject.AddComponent(_foodComponent);
+            _food = new Food(_minNutricionalValue);
+            GameObject.AddComponent(_food);
         }
     }
 
@@ -76,13 +76,13 @@ public class PlayerComponent : IComponent, IPhysicsUpdatable
 
         if (isFPressed && IsMainPlayer)
         {
-            PlayerComponent closestPlayerComponent = _playingMap.GetClosestGameObjectsInfo(GameObject).ClosestPlayer.GetComponent<PlayerComponent>();
+            Player closestPlayer = _playingMap.GetClosestGameObjectsInfo(GameObject).ClosestPlayer.GetComponent<Player>();
 
             IsMainPlayer = false;
-            closestPlayerComponent.IsMainPlayer = true;
+            closestPlayer.IsMainPlayer = true;
 
             _swapTimer = 0;
-            closestPlayerComponent._swapTimer = 0;
+            closestPlayer._swapTimer = 0;
         }
     }
 
@@ -122,14 +122,14 @@ public class PlayerComponent : IComponent, IPhysicsUpdatable
 
     public void EatFood(GameObject other)
     {
-        var foodComponent = other.GetComponent<FoodComponent>();
+        var foodComponent = other.GetComponent<Food>();
         
         IncreaseRadius(foodComponent.NutritionValue);
         ReduceSpeed(foodComponent.NutritionValue);
         
-        _foodComponent.NutritionValue = GameObject.Shape.Radius;
+        _food.NutritionValue = GameObject.Shape.Radius;
 
-        if (other.HasComponent<PlayerComponent>())
+        if (other.HasComponent<Player>())
             PlayersEaten++;
         else
             FoodEaten++;
@@ -173,12 +173,12 @@ public class PlayerComponent : IComponent, IPhysicsUpdatable
         }
         
         // i dont like how it looks. so many dots
-        if (info.ClosestPlayer.GetComponent<FoodComponent>().NutritionValue < GameObject.GetComponent<FoodComponent>().NutritionValue)
+        if (info.ClosestPlayer.GetComponent<Food>().NutritionValue < GameObject.GetComponent<Food>().NutritionValue)
         {
             return closestPlayerDirection;
         }
         
-        if (info.ClosestPlayer.GetComponent<FoodComponent>().NutritionValue >= GameObject.GetComponent<FoodComponent>().NutritionValue)
+        if (info.ClosestPlayer.GetComponent<Food>().NutritionValue >= GameObject.GetComponent<Food>().NutritionValue)
         {
             return (closestFoodDirection - closestPlayerDirection).Normalise();
         }
@@ -190,4 +190,4 @@ public class PlayerComponent : IComponent, IPhysicsUpdatable
     {
         return 1 + (_lastEatenValue) / (_maxMoveSpeed - _minMoveSpeed);
     }
-}
+}*/

@@ -24,7 +24,7 @@ public class PlayerFactory
         _agarioGame = agarioGame;
     }
 
-    public GameObject CreatePlayer(bool isMainPlayer, float defaultRadius)
+    public PlayerGameObject CreatePlayer(bool isMainPlayer, float defaultRadius)
     {
         Vector2f position = GetValidSpawnCoords();
         
@@ -47,15 +47,14 @@ public class PlayerFactory
         circle.Position = position;
         circle.FillColor = newColor;
 
-        GameObject newPlayer = new GameObject(circle);
-        newPlayer.AddComponent(new PlayerComponent(isMainPlayer, _playingMap));
+        PlayerGameObject newPlayer = new PlayerGameObject(_playingMap, circle);
+        newPlayer.AddComponent(new PlayerController(isMainPlayer));
         
-        _playingMap.GameObjectsToDisplay.Add(newPlayer);
         _playingMap.GameObjectsOnMap.Add(newPlayer);
-        _playingMap.PlayersOnMap.Add(newPlayer.GetComponent<PlayerComponent>());
+        _playingMap.PlayersOnMap.Add(newPlayer.GetComponent<PlayerController>());
 
-        newPlayer.GetComponent<FoodComponent>().OnBeingEaten += () => _playingMap.DeleteGameObject(newPlayer);
-        newPlayer.GetComponent<FoodComponent>().OnBeingEaten += () => _agarioGame.PlayerDied(newPlayer);
+        newPlayer.GetComponent<Food>().OnBeingEaten += () => _playingMap.DeleteGameObject(newPlayer);
+        newPlayer.GetComponent<Food>().OnBeingEaten += () => _agarioGame.PlayerDied(newPlayer);
 
         return newPlayer;
     }
