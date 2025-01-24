@@ -163,7 +163,6 @@ public class GameCycle
 
     private void Output()
     {
-        WorldCamera.FocusObject = _gameRules.GetGameObjectToFocusOn();
         _output.Display();
     }
 

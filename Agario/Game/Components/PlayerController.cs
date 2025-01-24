@@ -23,7 +23,8 @@ public class PlayerController : IComponent, IUpdatable
         GameCycle.GetInstance().RegisterObjectToUpdate(this);
         
         IsMainPlayer = isMainPlayer;
-        //PlayerGameObject = playerGameObject;
+
+        MainPlayerSizeIncreased += () => GameCycle.GetInstance().WorldCamera.ZoomOut(PlayerGameObject.GetSizeModifier());
     }
 
     public void SetGameObject(GameObject gameObject)

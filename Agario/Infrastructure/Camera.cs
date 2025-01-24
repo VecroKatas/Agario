@@ -1,6 +1,7 @@
 ﻿using Agario.Game;
 using Agario.Game.Components;
 using SFML.Graphics;
+using SFML.System;
 
 namespace Agario.Infrastructure;
 
@@ -9,32 +10,22 @@ public class Camera
     private static readonly FloatRect DEFAULT_VIEW_PARAMS =
         new FloatRect(GameCycle.GetInstance().GetScreenCenter().X / 2, GameCycle.GetInstance().GetScreenCenter().Y / 2, 1800, 900);
     
-    private PlayerGameObject? _focusObject;
-    public PlayerGameObject? FocusObject
+    public View View { get; private set; }
+    public GameObject? FocusObject { get; set; }
+
+    private Vector2f FocusPosition
     {
-        get => _focusObject;
-        set
+        get
         {
-            if (value == null)
+            if (FocusObject != null)
             {
-                _focusObject = null;
-                return;
+                return FocusObject.Shape.Position;
             }
             
-            if (_focusObject == value)
-                return;
-            
-            if (_focusObject != null)
-            {
-                _focusObject.GetComponent<PlayerController>().MainPlayerSizeIncreased -= ZoomOut;
-            }
-        
-            _focusObject = value;
-            _focusObject.GetComponent<PlayerController>().MainPlayerSizeIncreased += ZoomOut;
+            return GameCycle.GetInstance().GetScreenCenter();
         }
     }
 
-    public View View;
     private bool _zoomedOut = true;
     
     public Camera() : this(DEFAULT_VIEW_PARAMS)
@@ -47,23 +38,14 @@ public class Camera
 
     public void Update()
     {
-        if (_focusObject != null)
-        {
-            View.Center = _focusObject.Shape.Position;
-        }
-        else
-        {
-            if (_zoomedOut) 
-                ResetView();
-            
-            View.Center = GameCycle.GetInstance().GetScreenCenter();
-        }
+        if (FocusObject == null && _zoomedOut)
+            ResetView();
+
+        View.Center = FocusPosition;
     }
 
-    private void ZoomOut()
+    public void ZoomOut(float zoom)
     {
-        float zoom = FocusObject.GetSizeModifier();
-
         _zoomedOut = true;
         
         View.Zoom(zoom);

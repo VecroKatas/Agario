@@ -28,7 +28,6 @@ public class PlayingMap : IInitializeable, IPhysicsUpdatable
 
     public List<GameObject> GameObjectsOnMap;
     public List<PlayerController> PlayersOnMap;
-    //public List<Player> PlayersOnMap;
 
     public int FoodsOnMapCount { get; set; } = 0;
 
@@ -52,7 +51,6 @@ public class PlayingMap : IInitializeable, IPhysicsUpdatable
     {
         GameObjectsOnMap = new List<GameObject>();
         PlayersOnMap = new List<PlayerController>();
-        //PlayersOnMap = new List<Player>();
 
         _foodFactory = new FoodFactory(this);
         _playerFactory = new PlayerFactory(this, _agarioGame);
@@ -127,16 +125,6 @@ public class PlayingMap : IInitializeable, IPhysicsUpdatable
         {
             Vector2f moveOutDirection = new Vector2f(0, 0);
             
-            /*if (player.GameObject.Shape.Position.X - player.GameObject.Shape.Radius < 0)
-                moveOutDirection.X = 1;
-            else if (player.GameObject.Shape.Position.X + player.GameObject.Shape.Radius > Width)
-                moveOutDirection.X = -1;
-        
-            if (player.GameObject.Shape.Position.Y - player.GameObject.Shape.Radius < 0)
-                moveOutDirection.Y = 1;
-            else if (player.GameObject.Shape.Position.Y + player.GameObject.Shape.Radius > Height)
-                moveOutDirection.Y = -1;*/
-            
             if (player.PlayerGameObject.Shape.Position.X - player.PlayerGameObject.Shape.Radius < 0)
                 moveOutDirection.X = 1;
             else if (player.PlayerGameObject.Shape.Position.X + player.PlayerGameObject.Shape.Radius > Width)
@@ -150,23 +138,6 @@ public class PlayingMap : IInitializeable, IPhysicsUpdatable
             player.PlayerGameObject.Move(moveOutDirection);
         }
     }
-
-    /*public Vector2f AdjustMoveDirection(Player player, Vector2f moveDirection)
-    {
-        Vector2f newPosition = player.CalculateNextWorldPosition(moveDirection);
-        
-        if (!IsGameObjectWithinHorizontalBorders(player.GameObject, newPosition))
-        {
-            moveDirection.X = 0;
-        }
-        
-        if (!IsGameObjectWithinVerticalBorders(player.GameObject, newPosition))
-        {
-            moveDirection.Y = 0;
-        }
-        
-        return moveDirection;
-    }*/
 
     public Vector2f AdjustMoveDirection(PlayerGameObject playerGameObject, Vector2f moveDirection)
     {

@@ -142,6 +142,8 @@ public class AgarioGame : IGameRules
                 GameRestart.Invoke();
             }
         }
+        
+        UpdateGameObjectToFocusOn();
     }
     
     public void PlayerDied(PlayerGameObject player)
@@ -157,9 +159,9 @@ public class AgarioGame : IGameRules
         }
     }
 
-    public PlayerGameObject GetGameObjectToFocusOn()
+    public void UpdateGameObjectToFocusOn()
     {
-        return _isMainPlayerAlive ? MainPlayer : null;
+        _gameCycleInstance.WorldCamera.FocusObject = _isMainPlayerAlive ? MainPlayer : null;
     }
 
     public List<GameObject> GetGameObjectsToDisplay()
