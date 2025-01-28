@@ -1,5 +1,6 @@
 ﻿using Agario.Game.Components;
 using Agario.Game.Utilities;
+using Agario.Infrastructure;
 using SFML.Graphics;
 using SFML.System;
 
@@ -23,7 +24,7 @@ public class PlayerFactory
         _agarioGame = agarioGame;
     }
 
-    public PlayerGameObject CreatePlayer(bool isMainPlayer, float defaultRadius)
+    public GameObject CreatePlayer(bool isMainPlayer, float defaultRadius)
     {
         Vector2f position = GetValidSpawnCoords();
         
@@ -46,16 +47,20 @@ public class PlayerFactory
         circle.Position = position;
         circle.FillColor = newColor;
 
-        PlayerGameObject newPlayer = new PlayerGameObject(_agarioGame, circle);
-        newPlayer.AddComponent(new PlayerController(isMainPlayer));
+        GameObject newGameObject = new GameObject(circle);
+        newGameObject.AddComponent(new PlayerGameObject(_agarioGame, newGameObject));
+
+        Controller controller = isMainPlayer ? new HumanController() : new BotController();
         
-        _playingMap.GameObjectsOnMap.Add(newPlayer);
-        _playingMap.PlayersOnMap.Add(newPlayer.GetComponent<PlayerController>());
+        newGameObject.AddComponent(controller);
+        
+        _playingMap.GameObjectsOnMap.Add(newGameObject);
+        _playingMap.PlayersOnMap.Add(controller);
 
-        newPlayer.GetComponent<Food>().OnBeingEaten += () => _playingMap.DeleteGameObject(newPlayer);
-        newPlayer.GetComponent<Food>().OnBeingEaten += () => _agarioGame.PlayerDied(newPlayer);
+        newGameObject.GetComponent<Food>().OnBeingEaten += () => _playingMap.DeleteGameObject(newGameObject);
+        newGameObject.GetComponent<Food>().OnBeingEaten += () => _agarioGame.PlayerDied(newGameObject);
 
-        return newPlayer;
+        return newGameObject;
     }
 
     private Vector2f GetValidSpawnCoords()

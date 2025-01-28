@@ -1,4 +1,5 @@
 ﻿using Agario.Game.Components;
+using Agario.Game.Interfaces;
 using Agario.Infrastructure;
 using SFML.Graphics;
 using SFML.System;
@@ -6,7 +7,7 @@ using Time = Agario.Infrastructure.Time;
 
 namespace Agario.Game;
 
-public class PlayerGameObject : GameObject
+public class PlayerGameObject : IComponent
 {
     private float _consumedFoodValueModifier = 1 / 4f;
     private float _minNutricionalValue = 10;
@@ -20,42 +21,49 @@ public class PlayerGameObject : GameObject
 
     public AgarioGame AgarioGame;
 
+    public GameObject GameObject;
     private Food _food;
     
     public int FoodEaten { get; private set; }
     public int PlayersEaten { get; private set; }
 
-    public Action SizeIncreased { get; set; }
+    public Action SizeIncreased { get; set; } = new Action(() =>{});
     private float _lastEatenValue = 0;
 
-    public PlayerGameObject(AgarioGame agarioGame, CircleShape circle) : base(circle)
+    public PlayerGameObject(AgarioGame agarioGame, GameObject gameObject)
     {
         AgarioGame = agarioGame;
         _currentMoveSpeed = _maxMoveSpeed;
         FoodEaten = 0;
         PlayersEaten = 0;
+        GameObject = gameObject;
         
-        if (!HasComponent<Food>())
+        if (!GameObject.HasComponent<Food>())
         {
             _food = new Food(_minNutricionalValue);
-            AddComponent(_food);
+            GameObject.AddComponent(_food);
         }
+    }
+
+    public void SetGameObject(GameObject gameObject)
+    {
+        GameObject = gameObject;
     }
 
     public ClosestGameObjectsToPlayerInfo GetClosestGameObjectsInfo()
     {
-        return AgarioGame.PlayingMap.GetClosestGameObjectsInfo(this);
+        return AgarioGame.PlayingMap.GetClosestGameObjectsInfo(GameObject);
     }
 
     public Vector2f CalculateNextWorldPosition(Vector2f direction)
     {
-        return Shape.Position + direction * _currentMoveSpeed * Time.DeltaTime;
+        return GameObject.Shape.Position + direction * _currentMoveSpeed * Time.DeltaTime;
     }
 
     public void Move(Vector2f moveDirection)
     {
         moveDirection = AgarioGame.PlayingMap.AdjustMoveDirection(this, moveDirection);
-        Shape.Position += moveDirection * _currentMoveSpeed * Time.DeltaTime;
+        GameObject.Shape.Position += moveDirection * _currentMoveSpeed * Time.DeltaTime;
     }
 
     public void EatFood(GameObject other)
@@ -65,9 +73,9 @@ public class PlayerGameObject : GameObject
         IncreaseRadius(foodComponent.NutritionValue);
         ReduceSpeed(foodComponent.NutritionValue);
         
-        _food.NutritionValue = Shape.Radius;
+        _food.NutritionValue = GameObject.Shape.Radius;
 
-        if (other.HasComponent<PlayerController>())
+        if (other.HasComponent<HumanController>())
             PlayersEaten++;
         else
             FoodEaten++;
@@ -79,11 +87,11 @@ public class PlayerGameObject : GameObject
 
     private void IncreaseRadius(float delta)
     {
-        if (Shape.Radius < _maxRadius)
+        if (GameObject.Shape.Radius < _maxRadius)
         {
             _lastEatenValue = delta * _consumedFoodValueModifier;
-            Shape.Radius += delta * _consumedFoodValueModifier;
-            Shape.Origin = new Vector2f(Shape.Radius, Shape.Radius);
+            GameObject.Shape.Radius += delta * _consumedFoodValueModifier;
+            GameObject.Shape.Origin = new Vector2f(GameObject.Shape.Radius, GameObject.Shape.Radius);
         }
     }
 

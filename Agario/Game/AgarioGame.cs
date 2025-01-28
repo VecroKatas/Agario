@@ -25,26 +25,8 @@ public class AgarioGame : IGameRules
     private Random _random = new Random();
     
     public PlayingMap PlayingMap { get; private set; }
-    
-    /*private PlayerGameObject MainPlayer { 
-        get 
-        {
-            try
-            {
-                return PlayingMap.PlayersOnMap.First(p => p.IsMainPlayer).PlayerGameObject;
-            }
-            catch (InvalidOperationException)
-            {
-                return null;
-            }
-        }
-        set
-        {
-            PlayingMap.PlayersOnMap.First(p => p.IsMainPlayer).PlayerGameObject = value;
-        }
-    }*/
 
-    private PlayerGameObject _mainPlayer;
+    private GameObject _mainPlayer;
 
     public Action GameRestart { get; set; }
     
@@ -112,16 +94,16 @@ public class AgarioGame : IGameRules
         }
     }
 
-    private PlayerGameObject CreateMainPLayer()
+    private GameObject CreateMainPLayer()
     {
-        PlayerGameObject mainPlayer = PlayingMap.CreatePlayer(true);
+        GameObject mainPlayer = PlayingMap.CreatePlayer(true);
         
         SetMainPlayer(mainPlayer);
 
         return mainPlayer;
     }
 
-    public void SetMainPlayer(PlayerGameObject player)
+    public void SetMainPlayer(GameObject player)
     {
         _mainPlayer = player;
     }
@@ -155,9 +137,9 @@ public class AgarioGame : IGameRules
         UpdateGameObjectToFocusOn();
     }
     
-    public void PlayerDied(PlayerGameObject player)
+    public void PlayerDied(GameObject player)
     {
-        if (player.GetComponent<PlayerController>().IsMainPlayer)
+        if (player.GetComponent<Controller>().GetType() == typeof(HumanController))
         {
             _isMainPlayerAlive = false;
 
@@ -211,11 +193,13 @@ public class AgarioGame : IGameRules
         return InitText(content, copyFrom.FontSize, copyFrom.Color, copyFrom.TextObj.Position);
     }
 
-    private void UpdateStatsText(PlayerGameObject player)
+    private void UpdateStatsText(GameObject player)
     {
+        PlayerGameObject playerGameObject = player.GetComponent<PlayerGameObject>();
+        
         string content = "Your size: " + player.Shape.Radius + "\n" +
-                         "Food eaten: " + player.FoodEaten + "\n" +
-                         "Players eaten: " + player.PlayersEaten;
+                         "Food eaten: " + playerGameObject.FoodEaten + "\n" +
+                         "Players eaten: " + playerGameObject.PlayersEaten;
 
         _statsText = InitText(content, _statsText);
     }
