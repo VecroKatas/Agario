@@ -40,7 +40,7 @@ public class PlayerController : IComponent, IUpdatable
 
     public void Update()
     {
-        if (PlayerGameObject.PlayingMap.SimulationGoing)
+        if (PlayerGameObject.AgarioGame.PlayingMap.SimulationGoing)
         {
             Move();
 
@@ -64,6 +64,8 @@ public class PlayerController : IComponent, IUpdatable
 
             _swapTimer = 0;
             closestPlayer._swapTimer = 0;
+            
+            PlayerGameObject.AgarioGame.SetMainPlayer(closestPlayer.PlayerGameObject);
         }
     }
 

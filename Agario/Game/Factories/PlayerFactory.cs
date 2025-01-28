@@ -46,7 +46,7 @@ public class PlayerFactory
         circle.Position = position;
         circle.FillColor = newColor;
 
-        PlayerGameObject newPlayer = new PlayerGameObject(_playingMap, circle);
+        PlayerGameObject newPlayer = new PlayerGameObject(_agarioGame, circle);
         newPlayer.AddComponent(new PlayerController(isMainPlayer));
         
         _playingMap.GameObjectsOnMap.Add(newPlayer);

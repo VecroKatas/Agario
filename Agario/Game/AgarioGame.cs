@@ -26,7 +26,7 @@ public class AgarioGame : IGameRules
     
     public PlayingMap PlayingMap { get; private set; }
     
-    private PlayerGameObject MainPlayer { 
+    /*private PlayerGameObject MainPlayer { 
         get 
         {
             try
@@ -42,7 +42,9 @@ public class AgarioGame : IGameRules
         {
             PlayingMap.PlayersOnMap.First(p => p.IsMainPlayer).PlayerGameObject = value;
         }
-    }
+    }*/
+
+    private PlayerGameObject _mainPlayer;
 
     public Action GameRestart { get; set; }
     
@@ -94,7 +96,7 @@ public class AgarioGame : IGameRules
     
     private void GeneratePlayers()
     {
-        MainPlayer ??= CreateMainPLayer();
+        _mainPlayer ??= CreateMainPLayer();
         
         while (PlayingMap.PlayersOnMap.Count < MAX_PLAYERS_AMOUNT)
         {
@@ -113,8 +115,15 @@ public class AgarioGame : IGameRules
     private PlayerGameObject CreateMainPLayer()
     {
         PlayerGameObject mainPlayer = PlayingMap.CreatePlayer(true);
+        
+        SetMainPlayer(mainPlayer);
 
         return mainPlayer;
+    }
+
+    public void SetMainPlayer(PlayerGameObject player)
+    {
+        _mainPlayer = player;
     }
 
     public void PhysicsUpdate()
@@ -161,7 +170,7 @@ public class AgarioGame : IGameRules
 
     public void UpdateGameObjectToFocusOn()
     {
-        _gameCycleInstance.WorldCamera.FocusObject = _isMainPlayerAlive ? MainPlayer : null;
+        _gameCycleInstance.WorldCamera.FocusObject = _isMainPlayerAlive ? _mainPlayer : null;
     }
 
     public List<GameObject> GetGameObjectsToDisplay()

@@ -18,7 +18,7 @@ public class PlayerGameObject : GameObject
     private float _minRadius = 10;
     private float _maxRadius = 250;
 
-    public PlayingMap PlayingMap;
+    public AgarioGame AgarioGame;
 
     private Food _food;
     
@@ -28,9 +28,9 @@ public class PlayerGameObject : GameObject
     public Action SizeIncreased { get; set; }
     private float _lastEatenValue = 0;
 
-    public PlayerGameObject(PlayingMap playingMap, CircleShape circle) : base(circle)
+    public PlayerGameObject(AgarioGame agarioGame, CircleShape circle) : base(circle)
     {
-        PlayingMap = playingMap;
+        AgarioGame = agarioGame;
         _currentMoveSpeed = _maxMoveSpeed;
         FoodEaten = 0;
         PlayersEaten = 0;
@@ -44,7 +44,7 @@ public class PlayerGameObject : GameObject
 
     public ClosestGameObjectsToPlayerInfo GetClosestGameObjectsInfo()
     {
-        return PlayingMap.GetClosestGameObjectsInfo(this);
+        return AgarioGame.PlayingMap.GetClosestGameObjectsInfo(this);
     }
 
     public Vector2f CalculateNextWorldPosition(Vector2f direction)
@@ -54,7 +54,7 @@ public class PlayerGameObject : GameObject
 
     public void Move(Vector2f moveDirection)
     {
-        moveDirection = PlayingMap.AdjustMoveDirection(this, moveDirection);
+        moveDirection = AgarioGame.PlayingMap.AdjustMoveDirection(this, moveDirection);
         Shape.Position += moveDirection * _currentMoveSpeed * Time.DeltaTime;
     }
 
