@@ -52,14 +52,13 @@ public class PlayerFactory
 
         Controller controller = humanController != null ? humanController : new BotController();
         
-        newGameObject.AddComponent(controller);
+        controller.SetTargetGameObject(newGameObject);
         
         _playingMap.GameObjectsOnMap.Add(newGameObject);
         _playingMap.PlayersOnMap.Add(controller);
 
         newGameObject.GetComponent<Food>().OnBeingEaten += () => _playingMap.DeleteGameObject(newGameObject);
         newGameObject.GetComponent<Food>().OnBeingEaten += () => _agarioGame.PlayerDied(newGameObject);
-        //newGameObject.GetComponent<Food>().OnBeingEaten += () => controller.DestroyGameObject();
 
         return newGameObject;
     }

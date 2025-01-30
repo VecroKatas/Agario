@@ -45,7 +45,7 @@ public class PlayerGameObject : IComponent
         }
     }
 
-    public void SetGameObject(GameObject gameObject)
+    public void SetParentGameObject(GameObject gameObject)
     {
         GameObject = gameObject;
     }

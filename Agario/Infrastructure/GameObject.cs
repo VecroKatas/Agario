@@ -48,7 +48,7 @@ public class GameObject
     {
         _components[typeof(T)] = component;
         
-        component.SetGameObject(this);
+        component.SetParentGameObject(this);
     }
     
     public bool RemoveComponent<T>() where T : IComponent

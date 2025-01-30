@@ -4,5 +4,5 @@ namespace Agario.Game.Interfaces;
 
 public interface IComponent
 {
-    public void SetGameObject(GameObject gameObject);
+    public void SetParentGameObject(GameObject gameObject);
 }

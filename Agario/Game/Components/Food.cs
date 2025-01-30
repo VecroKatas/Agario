@@ -15,7 +15,7 @@ public class Food : IComponent
         NutritionValue = nutritionValue;
     }
 
-    public void SetGameObject(GameObject gameObject)
+    public void SetParentGameObject(GameObject gameObject)
     {
         GameObject = gameObject;
     }

@@ -95,23 +95,23 @@ public class PlayingMap : IInitializeable, IPhysicsUpdatable
     {
         foreach (var player in new List<Controller>(PlayersOnMap))
         {
-            ClosestGameObjectsToPlayerInfo info = GetClosestGameObjectsInfo(player.GameObject);
+            ClosestGameObjectsToPlayerInfo info = GetClosestGameObjectsInfo(player.ParentGameObject);
 
             float foodMargin = info.ClosestFood.Shape.Radius * info.ClosestFood.Shape.Radius * AllowedCollisionDepthModifierSqr;
 
             if (info.FoodDistanceSqr < -foodMargin)
             {
-                player.GameObject.GetComponent<PlayerGameObject>().EatFood(info.ClosestFood);
+                player.ParentGameObject.GetComponent<PlayerGameObject>().EatFood(info.ClosestFood);
             }
 
             float playerMargin = info.ClosestPlayer.Shape.Radius * info.ClosestPlayer.Shape.Radius * AllowedCollisionDepthModifierSqr;
             
-            if (player.GameObject.Shape.Radius < info.ClosestPlayer.Shape.Radius)
+            if (player.ParentGameObject.Shape.Radius < info.ClosestPlayer.Shape.Radius)
                 continue;
             
             if (info.PlayerDistanceSqr < -playerMargin)
             {
-                player.GameObject.GetComponent<PlayerGameObject>().EatFood(info.ClosestPlayer);
+                player.ParentGameObject.GetComponent<PlayerGameObject>().EatFood(info.ClosestPlayer);
                 if (info.ClosestPlayer.GetComponent<Controller>().GetType() == typeof(HumanController))
                     break;
             }
@@ -124,17 +124,17 @@ public class PlayingMap : IInitializeable, IPhysicsUpdatable
         {
             Vector2f moveOutDirection = new Vector2f(0, 0);
             
-            if (player.GameObject.Shape.Position.X - player.GameObject.Shape.Radius < 0)
+            if (player.ParentGameObject.Shape.Position.X - player.ParentGameObject.Shape.Radius < 0)
                 moveOutDirection.X = 1;
-            else if (player.GameObject.Shape.Position.X + player.GameObject.Shape.Radius > Width)
+            else if (player.ParentGameObject.Shape.Position.X + player.ParentGameObject.Shape.Radius > Width)
                 moveOutDirection.X = -1;
         
-            if (player.GameObject.Shape.Position.Y - player.GameObject.Shape.Radius < 0)
+            if (player.ParentGameObject.Shape.Position.Y - player.ParentGameObject.Shape.Radius < 0)
                 moveOutDirection.Y = 1;
-            else if (player.GameObject.Shape.Position.Y + player.GameObject.Shape.Radius > Height)
+            else if (player.ParentGameObject.Shape.Position.Y + player.ParentGameObject.Shape.Radius > Height)
                 moveOutDirection.Y = -1;
         
-            player.GameObject.GetComponent<PlayerGameObject>().Move(moveOutDirection);
+            player.ParentGameObject.GetComponent<PlayerGameObject>().Move(moveOutDirection);
         }
     }
 

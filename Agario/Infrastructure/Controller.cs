@@ -4,15 +4,19 @@ namespace Agario.Infrastructure;
 
 public class Controller : IComponent
 {
-    public GameObject GameObject;
+    public GameObject ParentGameObject { get; protected set; }
+    public GameObject TargetGameObject { get; protected set; }
     
     public Controller(){}
 
-    public Controller(GameObject gameObject)
+    public Controller(GameObject parentGameObject)
     {
-        GameObject = gameObject;
+        ParentGameObject = parentGameObject;
     }
 
-    public virtual void SetGameObject(GameObject gameObject)
-        => GameObject = gameObject;
+    public virtual void SetParentGameObject(GameObject gameObject)
+        => ParentGameObject = gameObject;
+
+    public virtual void SetTargetGameObject(GameObject targetGameObject)
+        => TargetGameObject = targetGameObject;
 }

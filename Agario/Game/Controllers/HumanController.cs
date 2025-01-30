@@ -22,10 +22,13 @@ public class HumanController : PlayerController, IComponent, IUpdatable
         MainPlayerSizeIncreased += () => GameCycle.GetInstance().WorldCamera.ZoomOut(PlayerGameObject.GetSizeModifier());
     }
 
-    public override void SetGameObject(GameObject gameObject)
+    public override void SetTargetGameObject(GameObject gameObject)
     {
-        GameObject = gameObject;
-        PlayerGameObject = GameObject.GetComponent<PlayerGameObject>();
+        //base.SetParentGameObject(gameObject);
+        ParentGameObject = gameObject;
+        ParentGameObject.RemoveComponent<Controller>();
+        ParentGameObject.AddComponent((Controller)this);
+        PlayerGameObject = ParentGameObject.GetComponent<PlayerGameObject>();
         PlayerGameObject.SizeIncreased += PlayerGameObjSizeIncreased;
     }
 
@@ -43,16 +46,18 @@ public class HumanController : PlayerController, IComponent, IUpdatable
         var info = PlayerGameObject.GetClosestGameObjectsInfo();
         Controller closestBotController = info.ClosestPlayer.GetComponent<Controller>();
 
-        GameObject tmp = closestBotController.GameObject;
-        closestBotController.SetGameObject(GameObject);
-        PlayerGameObject.SizeIncreased = () => { };
-        GameObject.RemoveComponent<Controller>();
-        GameObject.AddComponent((Controller)closestBotController);
-        SetGameObject(tmp);
-        GameObject.RemoveComponent<Controller>();
-        GameObject.AddComponent((Controller)this);
-            
-        PlayerGameObject.AgarioGame.SetMainPlayer(GameObject);
+        GameObject tmp = closestBotController.ParentGameObject;
+        
+        closestBotController.SetTargetGameObject(ParentGameObject);
+        
+        //PlayerGameObject.SizeIncreased = () => { };
+        /*ParentGameObject.RemoveComponent<Controller>();
+        ParentGameObject.AddComponent((Controller)closestBotController);*/
+        SetTargetGameObject(tmp);
+        /*ParentGameObject.RemoveComponent<Controller>();
+        ParentGameObject.AddComponent((Controller)this);*/
+        
+        PlayerGameObject.AgarioGame.SetMainPlayer(ParentGameObject);
     }
 
     public void Move()
