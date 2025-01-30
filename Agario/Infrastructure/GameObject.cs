@@ -46,14 +46,18 @@ public class GameObject
 
     public void AddComponent<T>(T component) where T : IComponent
     {
-        var type = typeof(T);
-        if (_components.ContainsKey(type))
-        {
-            throw new InvalidOperationException($"Component of type {type.Name} already exists.");
-        }
-
-        _components[type] = component;
+        _components[typeof(T)] = component;
         
         component.SetGameObject(this);
+    }
+    
+    public bool RemoveComponent<T>() where T : IComponent
+    {
+        if (_components.ContainsKey(typeof(T)))
+        {
+            _components.Remove(typeof(T));
+            return true;
+        }
+        return false;
     }
 }

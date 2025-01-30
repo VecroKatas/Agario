@@ -1,35 +1,48 @@
-﻿namespace Agario.Infrastructure;
+﻿using SFML.Window;
+
+namespace Agario.Infrastructure;
+
+public enum KeyBindAction
+{
+    PlayerSwap,
+}
+
+public struct PlayerKeyMap
+{
+    public Dictionary<KeyBindAction, KeyBind> KeyBinds;
+}
 
 public class PlayerInputManager
 {
-    private readonly List<KeyBind> keyBindings;
+    private Dictionary<KeyBindAction, KeyBind> keyBindings;
     
     public PlayerInputManager()
     {
-        keyBindings = new List<KeyBind>();
+        keyBindings = new Dictionary<KeyBindAction, KeyBind>();
+    }
+
+    public PlayerInputManager(PlayerKeyMap playerKeyMap)
+    {
+        keyBindings = new Dictionary<KeyBindAction, KeyBind>(playerKeyMap.KeyBinds);
+    }
+
+    public void SetKeyBinding(KeyBindAction actionName, Keyboard.Key key)
+    {
+        keyBindings[actionName] = new KeyBind(key);
     }
     
-    public void AddOnDownKeyBind(KeyBind keyBind, Action action)
+    public void AddOnDownKeyBinding(KeyBindAction actionName, Action action)
     {
-        int index = keyBindings.IndexOf(keyBind);
-        keyBind.AddOnDownCallback(action);
-        if (index != -1)
-        {
-            keyBindings[index] = keyBind;
-        }
-        else
-        {
-            keyBindings.Add(keyBind);
-        }
+        keyBindings[actionName].AddOnDownCallback(action);
     }
     
     public void ProcessInput()
     {
         foreach (var keyBind in keyBindings)
         {
-            if (keyBind.IsDown())
+            if (keyBind.Value.IsDown())
             {
-                keyBind.ProcessOnDownCallback();
+                keyBind.Value.ProcessOnDownCallback();
             }
         }
     }

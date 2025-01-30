@@ -1,5 +1,4 @@
-﻿using Agario.Game.Components;
-using Agario.Game.Factories;
+﻿using Agario.Game.Factories;
 using Agario.Game.Interfaces;
 using Agario.Game.Utilities;
 using Agario.Infrastructure;
@@ -72,9 +71,9 @@ public class PlayingMap : IInitializeable, IPhysicsUpdatable
             HandleCollisions();
     }
 
-    public GameObject CreatePlayer(bool isMainPlayer)
+    public GameObject CreatePlayer(HumanController humanController = null)
     {
-        GameObject newPlayer = _playerFactory.CreatePlayer(isMainPlayer, PlayerDefaultRadius);
+        GameObject newPlayer = _playerFactory.CreatePlayer(PlayerDefaultRadius, humanController);
 
         return newPlayer;
     }

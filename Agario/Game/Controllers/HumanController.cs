@@ -2,8 +2,6 @@
 using Agario.Game.Utilities;
 using Agario.Infrastructure;
 using SFML.System;
-using SFML.Window;
-using Time = Agario.Infrastructure.Time;
 
 namespace Agario.Game;
 
@@ -11,16 +9,15 @@ public class HumanController : PlayerController, IComponent, IUpdatable
 {
     public PlayerGameObject PlayerGameObject;
 
-    private float _swapCooldown = .5f;
-    private float _swapTimer = float.MaxValue;
-
     public Action MainPlayerSizeIncreased { get; set; }
 
-    public HumanController()
+    public HumanController(PlayerKeyMap playerKeyMap)
     {
         GameCycle.GetInstance().RegisterObjectToUpdate(this);
+
+        PlayerInputManager = new PlayerInputManager(playerKeyMap);
         
-        PlayerInputManager.AddOnDownKeyBind(new KeyBind(Keyboard.Key.F), PlayerSwap);
+        PlayerInputManager.AddOnDownKeyBinding(KeyBindAction.PlayerSwap, PlayerSwap);
 
         MainPlayerSizeIncreased += () => GameCycle.GetInstance().WorldCamera.ZoomOut(PlayerGameObject.GetSizeModifier());
     }
@@ -49,16 +46,13 @@ public class HumanController : PlayerController, IComponent, IUpdatable
         GameObject tmp = closestBotController.GameObject;
         closestBotController.SetGameObject(GameObject);
         PlayerGameObject.SizeIncreased = () => { };
+        GameObject.RemoveComponent<Controller>();
+        GameObject.AddComponent((Controller)closestBotController);
         SetGameObject(tmp);
-
-        _swapTimer = 0;
+        GameObject.RemoveComponent<Controller>();
+        GameObject.AddComponent((Controller)this);
             
         PlayerGameObject.AgarioGame.SetMainPlayer(GameObject);
-    }
-
-    private void UpdateSwapTimer()
-    {
-        _swapTimer += Time.DeltaTime;
     }
 
     public void Move()

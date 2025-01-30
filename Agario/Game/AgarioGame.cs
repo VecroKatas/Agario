@@ -1,9 +1,9 @@
-﻿using Agario.Game.Components;
-using Agario.Infrastructure;
+﻿using Agario.Infrastructure;
 using Agario.Game.Factories;
 using Agario.Game.Interfaces;
 using SFML.Graphics;
 using SFML.System;
+using SFML.Window;
 using Time = Agario.Infrastructure.Time;
 
 namespace Agario.Game;
@@ -21,12 +21,21 @@ public class AgarioGame : IGameRules
     private const int MAX_PLAYERS_AMOUNT = 30;
     
     private const float SecondsAfterGameOver = 4f;
+
+    private PlayerKeyMap playerKeyMap = new PlayerKeyMap()
+    {
+        KeyBinds = new Dictionary<KeyBindAction, KeyBind>()
+        {
+            {KeyBindAction.PlayerSwap, new KeyBind(Keyboard.Key.F)}
+        }
+    };
     
     private Random _random = new Random();
     
     public PlayingMap PlayingMap { get; private set; }
 
     private GameObject _mainPlayer;
+    private HumanController _humanController;
 
     public Action GameRestart { get; set; }
     
@@ -59,6 +68,8 @@ public class AgarioGame : IGameRules
     public void Initialize()
     {
         PlayingMap.StartSimulation();
+
+        _humanController = new HumanController(playerKeyMap);
         
         GeneratePlayers();
         GenerateFood();
@@ -82,7 +93,7 @@ public class AgarioGame : IGameRules
         
         while (PlayingMap.PlayersOnMap.Count < MAX_PLAYERS_AMOUNT)
         {
-            PlayingMap.CreatePlayer(false);
+            PlayingMap.CreatePlayer();
         }
     }
 
@@ -96,7 +107,7 @@ public class AgarioGame : IGameRules
 
     private GameObject CreateMainPLayer()
     {
-        GameObject mainPlayer = PlayingMap.CreatePlayer(true);
+        GameObject mainPlayer = PlayingMap.CreatePlayer(_humanController);
         
         SetMainPlayer(mainPlayer);
 

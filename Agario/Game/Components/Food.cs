@@ -6,7 +6,7 @@ namespace Agario.Game.Components;
 public class Food : IComponent
 {
     public float NutritionValue { get; set; }
-    public Action OnBeingEaten;
+    public Action OnBeingEaten { get; set; }
 
     public GameObject GameObject;
 
