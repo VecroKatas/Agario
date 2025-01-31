@@ -1,6 +1,6 @@
 ﻿using Agario.Game.Components;
-using Agario.Game.Utilities;
 using Agario.Infrastructure;
+using Agario.Infrastructure.Utilities;
 using SFML.Graphics;
 using SFML.System;
 
@@ -71,6 +71,6 @@ public class FoodFactory
         if (randomVector.Y > .99f)
             randomVector.Y = .99f;
         
-        return new Vector2f( randomVector.X * PlayingMap.Width, randomVector.Y * PlayingMap.Height);
+        return new Vector2f( randomVector.X * GameConfig.PlayingMapWidth, randomVector.Y * GameConfig.PlayingMapWidth);
     }
 }

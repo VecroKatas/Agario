@@ -1,7 +1,7 @@
 ﻿using Agario.Game.Factories;
 using Agario.Game.Interfaces;
-using Agario.Game.Utilities;
 using Agario.Infrastructure;
+using Agario.Infrastructure.Utilities;
 using SFML.System;
 
 namespace Agario.Game;
@@ -17,14 +17,6 @@ public struct ClosestGameObjectsToPlayerInfo
 
 public class PlayingMap : IInitializeable, IPhysicsUpdatable
 {
-    public static readonly uint Width = 5000;
-    public static readonly uint Height = 5000;
-    
-    private const float AllowedCollisionDepthModifierSqr = 1.5f;
-
-    private const float PlayerDefaultRadius = 10;
-    private const float FoodDefaultRadius = 4;
-
     public List<GameObject> GameObjectsOnMap;
     public List<Controller> PlayersOnMap;
 
@@ -73,14 +65,14 @@ public class PlayingMap : IInitializeable, IPhysicsUpdatable
 
     public GameObject CreatePlayer(HumanController humanController = null)
     {
-        GameObject newPlayer = _playerFactory.CreatePlayer(PlayerDefaultRadius, humanController);
+        GameObject newPlayer = _playerFactory.CreatePlayer(GameConfig.PlayerGameObjectDefaultRadius, humanController);
 
         return newPlayer;
     }
 
     public void CreateFood(int nutritionValue)
     {
-        _foodFactory.CreateFood(FoodDefaultRadius, nutritionValue);
+        _foodFactory.CreateFood(GameConfig.FoodGameObjectDefaultRadius, nutritionValue);
     }
     
     private void HandleCollisions()
@@ -97,14 +89,14 @@ public class PlayingMap : IInitializeable, IPhysicsUpdatable
         {
             ClosestGameObjectsToPlayerInfo info = GetClosestGameObjectsInfo(player.ParentGameObject);
 
-            float foodMargin = info.ClosestFood.Shape.Radius * info.ClosestFood.Shape.Radius * AllowedCollisionDepthModifierSqr;
+            float foodMargin = info.ClosestFood.Shape.Radius * info.ClosestFood.Shape.Radius * GameConfig.AllowedGameObjectCollisionDepthModifier;
 
             if (info.FoodDistanceSqr < -foodMargin)
             {
                 player.ParentGameObject.GetComponent<PlayerGameObject>().EatFood(info.ClosestFood);
             }
 
-            float playerMargin = info.ClosestPlayer.Shape.Radius * info.ClosestPlayer.Shape.Radius * AllowedCollisionDepthModifierSqr;
+            float playerMargin = info.ClosestPlayer.Shape.Radius * info.ClosestPlayer.Shape.Radius * GameConfig.AllowedGameObjectCollisionDepthModifier;
             
             if (player.ParentGameObject.Shape.Radius < info.ClosestPlayer.Shape.Radius)
                 continue;
@@ -126,12 +118,12 @@ public class PlayingMap : IInitializeable, IPhysicsUpdatable
             
             if (player.ParentGameObject.Shape.Position.X - player.ParentGameObject.Shape.Radius < 0)
                 moveOutDirection.X = 1;
-            else if (player.ParentGameObject.Shape.Position.X + player.ParentGameObject.Shape.Radius > Width)
+            else if (player.ParentGameObject.Shape.Position.X + player.ParentGameObject.Shape.Radius > GameConfig.PlayingMapWidth)
                 moveOutDirection.X = -1;
         
             if (player.ParentGameObject.Shape.Position.Y - player.ParentGameObject.Shape.Radius < 0)
                 moveOutDirection.Y = 1;
-            else if (player.ParentGameObject.Shape.Position.Y + player.ParentGameObject.Shape.Radius > Height)
+            else if (player.ParentGameObject.Shape.Position.Y + player.ParentGameObject.Shape.Radius > GameConfig.PlayingMapHeight)
                 moveOutDirection.Y = -1;
         
             player.ParentGameObject.GetComponent<PlayerGameObject>().Move(moveOutDirection);
@@ -158,12 +150,12 @@ public class PlayingMap : IInitializeable, IPhysicsUpdatable
     
     private bool IsGameObjectWithinHorizontalBorders(GameObject gameObject, Vector2f newPosition)
     {
-        return newPosition.X - gameObject.Shape.Radius > 0 && newPosition.X + gameObject.Shape.Radius < Width;
+        return newPosition.X - gameObject.Shape.Radius > 0 && newPosition.X + gameObject.Shape.Radius < GameConfig.PlayingMapWidth;
     }
     
     private bool IsGameObjectWithinVerticalBorders(GameObject gameObject, Vector2f newPosition)
     {
-        return newPosition.Y - gameObject.Shape.Radius > 0 && newPosition.Y + gameObject.Shape.Radius < Height;
+        return newPosition.Y - gameObject.Shape.Radius > 0 && newPosition.Y + gameObject.Shape.Radius < GameConfig.PlayingMapHeight;
     }
     
     public ClosestGameObjectsToPlayerInfo GetClosestGameObjectsInfo(GameObject gameObject)

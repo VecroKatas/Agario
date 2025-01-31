@@ -1,6 +1,4 @@
-﻿using Agario.Game;
-using Agario.Game.Components;
-using SFML.Graphics;
+﻿using SFML.Graphics;
 using SFML.System;
 
 namespace Agario.Infrastructure;
@@ -8,7 +6,7 @@ namespace Agario.Infrastructure;
 public class Camera
 {
     private static readonly FloatRect DEFAULT_VIEW_PARAMS =
-        new FloatRect(GameCycle.GetInstance().GetScreenCenter().X / 2, GameCycle.GetInstance().GetScreenCenter().Y / 2, 1800, 900);
+        new FloatRect(GameCycle.GetInstance().GetScreenCenter().X / 2, GameCycle.GetInstance().GetScreenCenter().Y / 2, GameConfig.RenderWindowWidth, GameConfig.RenderWindowHeight);
     
     public View View { get; private set; }
     public GameObject? FocusObject { get; set; }

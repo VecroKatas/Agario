@@ -1,6 +1,7 @@
 ﻿using Agario.Infrastructure;
 using Agario.Game.Factories;
 using Agario.Game.Interfaces;
+using Agario.Infrastructure.Utilities;
 using SFML.Graphics;
 using SFML.System;
 using SFML.Window;
@@ -17,11 +18,6 @@ public struct TextOnDisplay
 
 public class AgarioGame : IGameRules
 {
-    private const int MAX_FOOD_AMOUNT = 1000;
-    private const int MAX_PLAYERS_AMOUNT = 30;
-    
-    private const float SecondsAfterGameOver = 4f;
-
     private PlayerKeyMap playerKeyMap = new PlayerKeyMap()
     {
         KeyBinds = new Dictionary<KeyBindAction, KeyBind>()
@@ -76,7 +72,7 @@ public class AgarioGame : IGameRules
 
         _restartTimePassed = 0;
         
-        _solutionPath = GetSolutionPath();
+        _solutionPath = SolutionPathUtility.GetSolutionPath();
         
         _textFont = new Font(_solutionPath + LocalFontPath);
 
@@ -91,7 +87,7 @@ public class AgarioGame : IGameRules
     {
         _mainPlayer ??= CreateMainPLayer();
         
-        while (PlayingMap.PlayersOnMap.Count < MAX_PLAYERS_AMOUNT)
+        while (PlayingMap.PlayersOnMap.Count < GameConfig.MaxPlayersAmountOnMap)
         {
             PlayingMap.CreatePlayer();
         }
@@ -99,7 +95,7 @@ public class AgarioGame : IGameRules
 
     private void GenerateFood()
     {
-        while (PlayingMap.FoodsOnMapCount < MAX_FOOD_AMOUNT)
+        while (PlayingMap.FoodsOnMapCount < GameConfig.MaxFoodsAmountOnMap)
         {
             PlayingMap.CreateFood(_random.Next(1, Enum.GetNames(typeof(FoodColor)).Length));
         }
@@ -133,9 +129,9 @@ public class AgarioGame : IGameRules
         }
         else
         {
-            if (_restartTimePassed < SecondsAfterGameOver)
+            if (_restartTimePassed < GameConfig.SecondsAfterGameOver)
             {
-                UpdateUntilRestartText(SecondsAfterGameOver - _restartTimePassed);
+                UpdateUntilRestartText(GameConfig.SecondsAfterGameOver - _restartTimePassed);
 
                 _restartTimePassed += Time.DeltaTime;
             }
@@ -220,22 +216,5 @@ public class AgarioGame : IGameRules
         string content = "Game restarts in: " + timeUntilRestart.ToString("0.00") + "s";
 
         _timeUntilRestartText = InitText(content, _timeUntilRestartText);
-    }
-    
-    string GetSolutionPath()
-    {
-        string currentDirectory = Directory.GetCurrentDirectory();
-
-        while (!string.IsNullOrEmpty(currentDirectory))
-        {
-            if (Directory.GetFiles(currentDirectory, "*.sln").Length > 0)
-            {
-                return currentDirectory;
-            }
-
-            currentDirectory = Directory.GetParent(currentDirectory).FullName;
-        }
-
-        return "";
     }
 }

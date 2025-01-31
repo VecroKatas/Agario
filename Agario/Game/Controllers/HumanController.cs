@@ -1,6 +1,6 @@
 ﻿using Agario.Game.Interfaces;
-using Agario.Game.Utilities;
 using Agario.Infrastructure;
+using Agario.Infrastructure.Utilities;
 using SFML.System;
 
 namespace Agario.Game;

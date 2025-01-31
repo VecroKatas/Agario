@@ -1,7 +1,6 @@
 ﻿using Agario.Game.Components;
 using Agario.Game.Interfaces;
 using Agario.Infrastructure;
-using SFML.Graphics;
 using SFML.System;
 using Time = Agario.Infrastructure.Time;
 
@@ -9,15 +8,7 @@ namespace Agario.Game;
 
 public class PlayerGameObject : IComponent
 {
-    private float _consumedFoodValueModifier = 1 / 4f;
-    private float _minNutricionalValue = 10;
-    
-    private float _maxMoveSpeed = 200;
-    private float _minMoveSpeed = 20;
     private float _currentMoveSpeed;
-
-    private float _minRadius = 10;
-    private float _maxRadius = 250;
 
     public AgarioGame AgarioGame;
 
@@ -33,14 +24,14 @@ public class PlayerGameObject : IComponent
     public PlayerGameObject(AgarioGame agarioGame, GameObject gameObject)
     {
         AgarioGame = agarioGame;
-        _currentMoveSpeed = _maxMoveSpeed;
+        _currentMoveSpeed = GameConfig.PlayerMaxMoveSpeed;
         FoodEaten = 0;
         PlayersEaten = 0;
         GameObject = gameObject;
         
         if (!GameObject.HasComponent<Food>())
         {
-            _food = new Food(_minNutricionalValue);
+            _food = new Food(GameConfig.PlayerMinNutricionalValue);
             GameObject.AddComponent(_food);
         }
     }
@@ -87,26 +78,26 @@ public class PlayerGameObject : IComponent
 
     private void IncreaseRadius(float delta)
     {
-        if (GameObject.Shape.Radius < _maxRadius)
+        if (GameObject.Shape.Radius < GameConfig.PlayerMaxRadius)
         {
-            _lastEatenValue = delta * _consumedFoodValueModifier;
-            GameObject.Shape.Radius += delta * _consumedFoodValueModifier;
+            _lastEatenValue = delta * GameConfig.PlayerConsumedFoodValueModifier;
+            GameObject.Shape.Radius += delta * GameConfig.PlayerConsumedFoodValueModifier;
             GameObject.Shape.Origin = new Vector2f(GameObject.Shape.Radius, GameObject.Shape.Radius);
         }
     }
 
     private void ReduceSpeed(float valueConsumed)
     {
-        if (_currentMoveSpeed < _minMoveSpeed)
+        if (_currentMoveSpeed < GameConfig.PlayerMinMoveSpeed)
         {
-            float difference = valueConsumed / (_maxRadius - _minRadius) * _consumedFoodValueModifier;
+            float difference = valueConsumed / (GameConfig.PlayerMaxRadius - GameConfig.PlayerMinRadius) * GameConfig.PlayerConsumedFoodValueModifier;
         
-            _currentMoveSpeed -= difference * (_maxMoveSpeed - _minMoveSpeed);            
+            _currentMoveSpeed -= difference * (GameConfig.PlayerMaxMoveSpeed - GameConfig.PlayerMinMoveSpeed);            
         }
     }
 
     public float GetSizeModifier()
     {
-        return 1 + (_lastEatenValue) / (_maxMoveSpeed - _minMoveSpeed);
+        return 1 + (_lastEatenValue) / (GameConfig.PlayerMaxMoveSpeed - GameConfig.PlayerMinMoveSpeed);
     }
 }

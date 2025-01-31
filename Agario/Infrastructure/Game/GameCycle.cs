@@ -8,8 +8,7 @@ namespace Agario.Infrastructure;
 
 public class GameCycle
 {
-    public const int TARGET_FPS = 120;
-    public const float TIME_UNTIL_NEXT_UPDATE = 1f / TARGET_FPS;
+    public static float TIME_UNTIL_NEXT_UPDATE;
 
     public InputEvents InputEvents;
     
@@ -27,8 +26,10 @@ public class GameCycle
 
     private static GameCycle _instance;
     
-    private GameCycle() 
+    private GameCycle()
     {
+        TIME_UNTIL_NEXT_UPDATE = 1f / GameConfig.TargetFPS;
+        
         InitInterfaceLists();
     }
 

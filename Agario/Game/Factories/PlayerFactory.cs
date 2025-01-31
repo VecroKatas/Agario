@@ -1,6 +1,6 @@
 ﻿using Agario.Game.Components;
-using Agario.Game.Utilities;
 using Agario.Infrastructure;
+using Agario.Infrastructure.Utilities;
 using SFML.Graphics;
 using SFML.System;
 
@@ -36,7 +36,7 @@ public class PlayerFactory
         
         if (humanController != null)
         {
-            position = new Vector2f(PlayingMap.Width / 2, PlayingMap.Height / 2);
+            position = new Vector2f(GameConfig.PlayingMapWidth / 2, GameConfig.PlayingMapHeight / 2);
             newColor = new Color(200, 200, 200);
         }
         else
@@ -77,6 +77,6 @@ public class PlayerFactory
         if (randomVector.Y > .99f)
             randomVector.Y = .99f;
         
-        return new Vector2f( randomVector.X * PlayingMap.Width, randomVector.Y * PlayingMap.Height);
+        return new Vector2f( randomVector.X * GameConfig.PlayingMapWidth, randomVector.Y * GameConfig.PlayingMapHeight);
     }
 }
