@@ -17,7 +17,6 @@ public class BotController : Controller, IUpdatable
 
     public override void SetTargetGameObject(GameObject gameObject)
     {
-        //base.SetParentGameObject(gameObject);
         ParentGameObject = gameObject;
         ParentGameObject.RemoveComponent<Controller>();
         ParentGameObject.AddComponent((Controller)this);

@@ -24,7 +24,6 @@ public class HumanController : PlayerController, IComponent, IUpdatable
 
     public override void SetTargetGameObject(GameObject gameObject)
     {
-        //base.SetParentGameObject(gameObject);
         ParentGameObject = gameObject;
         ParentGameObject.RemoveComponent<Controller>();
         ParentGameObject.AddComponent((Controller)this);
@@ -49,13 +48,7 @@ public class HumanController : PlayerController, IComponent, IUpdatable
         GameObject tmp = closestBotController.ParentGameObject;
         
         closestBotController.SetTargetGameObject(ParentGameObject);
-        
-        //PlayerGameObject.SizeIncreased = () => { };
-        /*ParentGameObject.RemoveComponent<Controller>();
-        ParentGameObject.AddComponent((Controller)closestBotController);*/
         SetTargetGameObject(tmp);
-        /*ParentGameObject.RemoveComponent<Controller>();
-        ParentGameObject.AddComponent((Controller)this);*/
         
         PlayerGameObject.AgarioGame.SetMainPlayer(ParentGameObject);
     }
