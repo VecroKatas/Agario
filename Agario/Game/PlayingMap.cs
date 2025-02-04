@@ -1,4 +1,5 @@
-﻿using Agario.Game.Factories;
+﻿using Agario.Game.Configs;
+using Agario.Game.Factories;
 using Agario.Game.Interfaces;
 using Agario.Infrastructure;
 using Agario.Infrastructure.Utilities;
@@ -22,14 +23,21 @@ public class PlayingMap : IInitializeable, IPhysicsUpdatable
 
     public int FoodsOnMapCount { get; set; } = 0;
 
+    public bool SimulationGoing = false;
+
     private Random _random = new Random();
 
     private AgarioGame _agarioGame;
 
     private FoodFactory _foodFactory;
     private PlayerFactory _playerFactory;
+    
+    private float _playerGameObjectDefaultRadius;
+    private float _foodGameObjectDefaultRadius;
+    private float _allowedGameObjectCollisionDepthModifier;
 
-    public bool SimulationGoing = false;
+    public int Width { get; private set; }
+    public int Height { get; private set; }
     
     public PlayingMap(AgarioGame agarioGame) 
     { 
@@ -40,6 +48,12 @@ public class PlayingMap : IInitializeable, IPhysicsUpdatable
 
     public void Initialize()
     {
+        _playerGameObjectDefaultRadius = GameObjectConfig.PlayerGameObjectDefaultRadius;
+        _foodGameObjectDefaultRadius = GameObjectConfig.FoodGameObjectDefaultRadius;
+        _allowedGameObjectCollisionDepthModifier = GameObjectConfig.AllowedGameObjectCollisionDepthModifier;
+        Width = PlayingMapConfig.PlayingMapWidth;
+        Height = PlayingMapConfig.PlayingMapHeight;
+        
         GameObjectsOnMap = new List<GameObject>();
         PlayersOnMap = new List<Controller>();
 
@@ -65,14 +79,14 @@ public class PlayingMap : IInitializeable, IPhysicsUpdatable
 
     public GameObject CreatePlayer(HumanController humanController = null)
     {
-        GameObject newPlayer = _playerFactory.CreatePlayer(GameConfig.PlayerGameObjectDefaultRadius, humanController);
+        GameObject newPlayer = _playerFactory.CreatePlayer(_playerGameObjectDefaultRadius, humanController);
 
         return newPlayer;
     }
 
     public void CreateFood(int nutritionValue)
     {
-        _foodFactory.CreateFood(GameConfig.FoodGameObjectDefaultRadius, nutritionValue);
+        _foodFactory.CreateFood(_foodGameObjectDefaultRadius, nutritionValue);
     }
     
     private void HandleCollisions()
@@ -89,14 +103,14 @@ public class PlayingMap : IInitializeable, IPhysicsUpdatable
         {
             ClosestGameObjectsToPlayerInfo info = GetClosestGameObjectsInfo(player.ParentGameObject);
 
-            float foodMargin = info.ClosestFood.Shape.Radius * info.ClosestFood.Shape.Radius * GameConfig.AllowedGameObjectCollisionDepthModifier;
+            float foodMargin = info.ClosestFood.Shape.Radius * info.ClosestFood.Shape.Radius * _allowedGameObjectCollisionDepthModifier;
 
             if (info.FoodDistanceSqr < -foodMargin)
             {
                 player.ParentGameObject.GetComponent<PlayerGameObject>().EatFood(info.ClosestFood);
             }
 
-            float playerMargin = info.ClosestPlayer.Shape.Radius * info.ClosestPlayer.Shape.Radius * GameConfig.AllowedGameObjectCollisionDepthModifier;
+            float playerMargin = info.ClosestPlayer.Shape.Radius * info.ClosestPlayer.Shape.Radius * _allowedGameObjectCollisionDepthModifier;
             
             if (player.ParentGameObject.Shape.Radius < info.ClosestPlayer.Shape.Radius)
                 continue;
@@ -118,12 +132,12 @@ public class PlayingMap : IInitializeable, IPhysicsUpdatable
             
             if (player.ParentGameObject.Shape.Position.X - player.ParentGameObject.Shape.Radius < 0)
                 moveOutDirection.X = 1;
-            else if (player.ParentGameObject.Shape.Position.X + player.ParentGameObject.Shape.Radius > GameConfig.PlayingMapWidth)
+            else if (player.ParentGameObject.Shape.Position.X + player.ParentGameObject.Shape.Radius > Width)
                 moveOutDirection.X = -1;
         
             if (player.ParentGameObject.Shape.Position.Y - player.ParentGameObject.Shape.Radius < 0)
                 moveOutDirection.Y = 1;
-            else if (player.ParentGameObject.Shape.Position.Y + player.ParentGameObject.Shape.Radius > GameConfig.PlayingMapHeight)
+            else if (player.ParentGameObject.Shape.Position.Y + player.ParentGameObject.Shape.Radius > Height)
                 moveOutDirection.Y = -1;
         
             player.ParentGameObject.GetComponent<PlayerGameObject>().Move(moveOutDirection);
@@ -150,12 +164,12 @@ public class PlayingMap : IInitializeable, IPhysicsUpdatable
     
     private bool IsGameObjectWithinHorizontalBorders(GameObject gameObject, Vector2f newPosition)
     {
-        return newPosition.X - gameObject.Shape.Radius > 0 && newPosition.X + gameObject.Shape.Radius < GameConfig.PlayingMapWidth;
+        return newPosition.X - gameObject.Shape.Radius > 0 && newPosition.X + gameObject.Shape.Radius < Width;
     }
     
     private bool IsGameObjectWithinVerticalBorders(GameObject gameObject, Vector2f newPosition)
     {
-        return newPosition.Y - gameObject.Shape.Radius > 0 && newPosition.Y + gameObject.Shape.Radius < GameConfig.PlayingMapHeight;
+        return newPosition.Y - gameObject.Shape.Radius > 0 && newPosition.Y + gameObject.Shape.Radius < Height;
     }
     
     public ClosestGameObjectsToPlayerInfo GetClosestGameObjectsInfo(GameObject gameObject)

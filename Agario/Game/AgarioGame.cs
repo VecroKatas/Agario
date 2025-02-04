@@ -1,4 +1,5 @@
-﻿using Agario.Infrastructure;
+﻿using Agario.Game.Configs;
+using Agario.Infrastructure;
 using Agario.Game.Factories;
 using Agario.Game.Interfaces;
 using Agario.Infrastructure.Utilities;
@@ -48,6 +49,9 @@ public class AgarioGame : IGameRules
     private float _restartTimePassed;
 
     private readonly GameCycle _gameCycleInstance;
+
+    private int _maxPlayersOnMap;
+    private int _maxFoodsOnMap;
     
     public AgarioGame()
     {
@@ -63,6 +67,9 @@ public class AgarioGame : IGameRules
 
     public void Initialize()
     {
+        _maxPlayersOnMap = PlayingMapConfig.MaxPlayersAmountOnMap;
+        _maxFoodsOnMap = PlayingMapConfig.MaxFoodsAmountOnMap;
+        
         PlayingMap.StartSimulation();
 
         _humanController = new HumanController(playerKeyMap);
@@ -87,7 +94,7 @@ public class AgarioGame : IGameRules
     {
         _mainPlayer ??= CreateMainPLayer();
         
-        while (PlayingMap.PlayersOnMap.Count < GameConfig.MaxPlayersAmountOnMap)
+        while (PlayingMap.PlayersOnMap.Count < _maxPlayersOnMap)
         {
             PlayingMap.CreatePlayer();
         }
@@ -95,7 +102,7 @@ public class AgarioGame : IGameRules
 
     private void GenerateFood()
     {
-        while (PlayingMap.FoodsOnMapCount < GameConfig.MaxFoodsAmountOnMap)
+        while (PlayingMap.FoodsOnMapCount < _maxFoodsOnMap)
         {
             PlayingMap.CreateFood(_random.Next(1, Enum.GetNames(typeof(FoodColor)).Length));
         }

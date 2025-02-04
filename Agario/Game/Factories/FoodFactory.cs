@@ -71,6 +71,6 @@ public class FoodFactory
         if (randomVector.Y > .99f)
             randomVector.Y = .99f;
         
-        return new Vector2f( randomVector.X * GameConfig.PlayingMapWidth, randomVector.Y * GameConfig.PlayingMapWidth);
+        return new Vector2f( randomVector.X * _playingMap.Width, randomVector.Y * _playingMap.Height);
     }
 }

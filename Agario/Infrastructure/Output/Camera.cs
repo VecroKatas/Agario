@@ -1,4 +1,5 @@
-﻿using SFML.Graphics;
+﻿using Agario.Game.Configs;
+using SFML.Graphics;
 using SFML.System;
 
 namespace Agario.Infrastructure;

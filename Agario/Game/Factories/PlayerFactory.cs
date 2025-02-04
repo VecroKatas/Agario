@@ -36,7 +36,7 @@ public class PlayerFactory
         
         if (humanController != null)
         {
-            position = new Vector2f(GameConfig.PlayingMapWidth / 2, GameConfig.PlayingMapHeight / 2);
+            position = new Vector2f(_playingMap.Width / 2, _playingMap.Height / 2);
             newColor = new Color(200, 200, 200);
         }
         else
@@ -77,6 +77,6 @@ public class PlayerFactory
         if (randomVector.Y > .99f)
             randomVector.Y = .99f;
         
-        return new Vector2f( randomVector.X * GameConfig.PlayingMapWidth, randomVector.Y * GameConfig.PlayingMapHeight);
+        return new Vector2f( randomVector.X * _playingMap.Width, randomVector.Y * _playingMap.Height);
     }
 }

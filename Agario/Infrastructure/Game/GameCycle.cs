@@ -1,4 +1,5 @@
 ﻿using Agario.Game;
+using Agario.Game.Configs;
 using Agario.Game.Interfaces;
 using SFML.Graphics;
 using SFML.System;
