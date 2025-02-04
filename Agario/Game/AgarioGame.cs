@@ -43,8 +43,7 @@ public class AgarioGame : IGameRules
     private TextOnDisplay _timeUntilRestartText;
     
     private Font _textFont;
-    private string _solutionPath;
-    private const string LocalFontPath = "\\Fonts\\ARIAL.TTF";
+    private string _localFontPath;
 
     private float _restartTimePassed;
 
@@ -69,6 +68,7 @@ public class AgarioGame : IGameRules
     {
         _maxPlayersOnMap = PlayingMapConfig.MaxPlayersAmountOnMap;
         _maxFoodsOnMap = PlayingMapConfig.MaxFoodsAmountOnMap;
+        _localFontPath = GameConfig.LocalFontPath;
         
         PlayingMap.StartSimulation();
 
@@ -79,9 +79,7 @@ public class AgarioGame : IGameRules
 
         _restartTimePassed = 0;
         
-        _solutionPath = SolutionPathUtility.GetSolutionPath();
-        
-        _textFont = new Font(_solutionPath + LocalFontPath);
+        _textFont = new Font(AppContext.BaseDirectory + _localFontPath);
 
         RenderWindow renderWindow = _gameCycleInstance.RenderWindow;
         
