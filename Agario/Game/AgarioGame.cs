@@ -68,7 +68,7 @@ public class AgarioGame : IGameRules
     {
         _maxPlayersOnMap = PlayingMapConfig.MaxPlayersAmountOnMap;
         _maxFoodsOnMap = PlayingMapConfig.MaxFoodsAmountOnMap;
-        _localFontPath = GameConfig.LocalFontPath;
+        _localFontPath = FontsConfig.ArialPath;
         
         PlayingMap.StartSimulation();
         

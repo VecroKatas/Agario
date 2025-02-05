@@ -29,8 +29,6 @@ public class GameCycle
     
     private GameCycle()
     {
-        TIME_UNTIL_NEXT_UPDATE = 1f / GameConfig.TargetFPS;
-        
         InitInterfaceLists();
     }
 
@@ -72,6 +70,8 @@ public class GameCycle
 
     public void Initialization(RenderWindow renderWindow, IGameRules gameRules)
     {
+        TIME_UNTIL_NEXT_UPDATE = 1f / GameConfig.TargetFPS;
+        
         RenderWindow = renderWindow;
         RenderWindow.Closed += WindowClosed;
 

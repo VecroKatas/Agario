@@ -1,16 +1,17 @@
 ﻿using System.Globalization;
 using System.Reflection;
 using System.Security.Cryptography;
+using Agario.Game.Configs;
 using Agario.Infrastructure.Utilities;
 
 namespace Agario.Infrastructure;
 
 public static class ConfigService
 {
-    private static readonly string ExecutableConfigDirectory = Path.Combine(AppContext.BaseDirectory, "Configs");
-    private static readonly string SolutionConfigDirectory = Path.Combine(SolutionPathUtility.GetSolutionPath(), "Configs");
+    private static readonly string ExecutableConfigDirectory = AppContext.BaseDirectory;
+    private static readonly string SolutionConfigDirectory = SolutionPathUtility.GetSolutionPath();
     
-    private static void EnsureConfigExists(string sourceFile, string destinationFile)
+    /*private static void EnsureConfigExists(string sourceFile, string destinationFile)
     {
         if (!Directory.Exists(ExecutableConfigDirectory))
         {
@@ -34,16 +35,22 @@ public static class ConfigService
         using var stream1 = File.OpenRead(file1);
         using var stream2 = File.OpenRead(file2);
         return BitConverter.ToString(md5.ComputeHash(stream1)) == BitConverter.ToString(md5.ComputeHash(stream2));
-    }
+    }*/
     
     public static void LoadConfig(Type configType, string fileName)
     {
-        string solutionConfigIniPath = Path.Combine(SolutionConfigDirectory, fileName);
+        /*string solutionConfigIniPath = Path.Combine(SolutionConfigDirectory, fileName);
         string executableConfigIniPath = Path.Combine(ExecutableConfigDirectory, fileName);
 
-        EnsureConfigExists(solutionConfigIniPath, executableConfigIniPath);
+        EnsureConfigExists(solutionConfigIniPath, executableConfigIniPath);*/
+
+        string path;
+        if (EntryPointConfig.ConfigsFolder == null)
+            path = Path.Combine(ExecutableConfigDirectory, fileName);
+        else
+            path = Path.Combine(ExecutableConfigDirectory, EntryPointConfig.ConfigsFolder, fileName);
         
-        Dictionary<string, string> configData = ReadFile(executableConfigIniPath);
+        Dictionary<string, string> configData = ReadFile(path);
         
         foreach (var field in configType.GetFields(BindingFlags.Public | BindingFlags.Static))
         {
