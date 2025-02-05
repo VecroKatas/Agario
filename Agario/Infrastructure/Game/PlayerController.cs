@@ -2,7 +2,7 @@
 
 namespace Agario.Infrastructure;
 
-public class PlayerController : Controller, IComponent
+public class PlayerController : Controller
 {
     public PlayerInputManager PlayerInputManager;
 

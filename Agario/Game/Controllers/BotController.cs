@@ -17,11 +17,15 @@ public class BotController : Controller, IUpdatable
 
     public override void SetTargetGameObject(GameObject gameObject)
     {
-        ParentGameObject = gameObject;
-        ParentGameObject.RemoveComponent<Controller>();
-        ParentGameObject.AddComponent((Controller)this);
-        PlayerGameObject = ParentGameObject.GetComponent<PlayerGameObject>();
+        base.SetTargetGameObject(gameObject);
+        PlayerGameObject = TargetGameObject.GetComponent<PlayerGameObject>();
         PlayerGameObject.SizeIncreased = () => {};
+    }
+
+    public override void DestroyTargetGameObject()
+    {
+        PlayerGameObject.AgarioGame.PlayerDied(this);
+        base.DestroyTargetGameObject();
     }
 
     public void Update()
@@ -41,8 +45,8 @@ public class BotController : Controller, IUpdatable
     {
         ClosestGameObjectsToPlayerInfo info = PlayerGameObject.GetClosestGameObjectsInfo();
         
-        Vector2f closestFoodDirection = ParentGameObject.Shape.Position.CalculateNormalisedDirection(info.ClosestFood.Shape.Position);
-        Vector2f closestPlayerDirection = ParentGameObject.Shape.Position.CalculateNormalisedDirection(info.ClosestPlayer.Shape.Position);
+        Vector2f closestFoodDirection = TargetGameObject.Shape.Position.CalculateNormalisedDirection(info.ClosestFood.Shape.Position);
+        Vector2f ClosestPlayerControllerDirection = TargetGameObject.Shape.Position.CalculateNormalisedDirection(info.ClosestPlayerController.TargetGameObject.Shape.Position);
         
         if (info.FoodDistanceSqr < info.PlayerDistanceSqr)
         {
@@ -50,14 +54,14 @@ public class BotController : Controller, IUpdatable
         }
         
         // i dont like how it looks. so many dots
-        if (info.ClosestPlayer.GetComponent<Food>().NutritionValue < ParentGameObject.GetComponent<Food>().NutritionValue)
+        if (info.ClosestPlayerController.TargetGameObject.GetComponent<Food>().NutritionValue < TargetGameObject.GetComponent<Food>().NutritionValue)
         {
-            return closestPlayerDirection;
+            return ClosestPlayerControllerDirection;
         }
         
-        if (info.ClosestPlayer.GetComponent<Food>().NutritionValue >= ParentGameObject.GetComponent<Food>().NutritionValue)
+        if (info.ClosestPlayerController.TargetGameObject.GetComponent<Food>().NutritionValue >= TargetGameObject.GetComponent<Food>().NutritionValue)
         {
-            return (closestFoodDirection - closestPlayerDirection).Normalise();
+            return (closestFoodDirection - ClosestPlayerControllerDirection).Normalise();
         }
 
         return new Vector2f(0, 0);

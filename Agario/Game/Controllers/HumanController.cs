@@ -5,7 +5,7 @@ using SFML.System;
 
 namespace Agario.Game;
 
-public class HumanController : PlayerController, IComponent, IUpdatable
+public class HumanController : PlayerController, IUpdatable
 {
     public PlayerGameObject PlayerGameObject;
 
@@ -24,11 +24,15 @@ public class HumanController : PlayerController, IComponent, IUpdatable
 
     public override void SetTargetGameObject(GameObject gameObject)
     {
-        ParentGameObject = gameObject;
-        ParentGameObject.RemoveComponent<Controller>();
-        ParentGameObject.AddComponent((Controller)this);
-        PlayerGameObject = ParentGameObject.GetComponent<PlayerGameObject>();
+        base.SetTargetGameObject(gameObject);
+        PlayerGameObject = TargetGameObject.GetComponent<PlayerGameObject>();
         PlayerGameObject.SizeIncreased += PlayerGameObjSizeIncreased;
+    }
+
+    public override void DestroyTargetGameObject()
+    {
+        PlayerGameObject.AgarioGame.PlayerDied(this);
+        base.DestroyTargetGameObject();
     }
 
     public void Update()
@@ -43,14 +47,14 @@ public class HumanController : PlayerController, IComponent, IUpdatable
     private void PlayerSwap()
     {
         var info = PlayerGameObject.GetClosestGameObjectsInfo();
-        Controller closestBotController = info.ClosestPlayer.GetComponent<Controller>();
+        Controller closestBotController = info.ClosestPlayerController;
 
-        GameObject tmp = closestBotController.ParentGameObject;
+        GameObject tmp = closestBotController.TargetGameObject;
         
-        closestBotController.SetTargetGameObject(ParentGameObject);
+        closestBotController.SetTargetGameObject(TargetGameObject);
         SetTargetGameObject(tmp);
         
-        PlayerGameObject.AgarioGame.SetMainPlayer(ParentGameObject);
+        PlayerGameObject.AgarioGame.SetMainPlayer(TargetGameObject);
     }
 
     public void Move()

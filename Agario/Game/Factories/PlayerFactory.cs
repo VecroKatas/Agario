@@ -24,7 +24,7 @@ public class PlayerFactory
         _agarioGame = agarioGame;
     }
 
-    public GameObject CreatePlayer(float defaultRadius, HumanController humanController = null)
+    public GameObject CreatePlayer(float defaultRadius, Controller controller)
     {
         Vector2f position = GetValidSpawnCoords();
         
@@ -34,7 +34,7 @@ public class PlayerFactory
 
         Color newColor;
         
-        if (humanController != null)
+        if (controller.GetType() == typeof(HumanController))
         {
             position = new Vector2f(_playingMap.Width / 2, _playingMap.Height / 2);
             newColor = new Color(200, 200, 200);
@@ -49,16 +49,14 @@ public class PlayerFactory
 
         GameObject newGameObject = new GameObject(circle);
         newGameObject.AddComponent(new PlayerGameObject(_agarioGame, newGameObject));
-
-        Controller controller = humanController != null ? humanController : new BotController();
         
         controller.SetTargetGameObject(newGameObject);
         
         _playingMap.GameObjectsOnMap.Add(newGameObject);
-        _playingMap.PlayersOnMap.Add(controller);
+        _playingMap.ControllersOnMap.Add(controller);
 
         newGameObject.GetComponent<Food>().OnBeingEaten += () => _playingMap.DeleteGameObject(newGameObject);
-        newGameObject.GetComponent<Food>().OnBeingEaten += () => _agarioGame.PlayerDied(newGameObject);
+        newGameObject.GetComponent<Food>().OnBeingEaten += controller.DestroyTargetGameObject;
 
         return newGameObject;
     }

@@ -80,15 +80,20 @@ public class PlayerGameObject : IComponent
         ReduceSpeed(foodComponent.NutritionValue);
         
         _food.NutritionValue = GameObject.Shape.Radius;
-
-        if (other.HasComponent<HumanController>())
-            PlayersEaten++;
-        else
-            FoodEaten++;
+        
+        FoodEaten++;
         
         SizeIncreased.Invoke();
         
         foodComponent.BeingEaten();
+    }
+
+    public void EatFood(Controller controller)
+    {
+        PlayersEaten++;
+        FoodEaten--;
+        
+        EatFood(controller.TargetGameObject);
     }
 
     private void IncreaseRadius(float delta)

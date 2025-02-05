@@ -7,19 +7,20 @@ using SFML.System;
 
 namespace Agario.Game;
 
-public struct ClosestGameObjectsToPlayerInfo
+public class ClosestGameObjectsToPlayerInfo
 {
-    public GameObject Player;
+    public GameObject CurrentGameObject;
     public GameObject ClosestFood;
     public float FoodDistanceSqr;
-    public GameObject ClosestPlayer;
+    public Controller ClosestPlayerController;
     public float PlayerDistanceSqr;
 }
 
 public class PlayingMap : IInitializeable, IPhysicsUpdatable
 {
     public List<GameObject> GameObjectsOnMap;
-    public List<Controller> PlayersOnMap;
+    public List<Controller> ControllersOnMap;
+    public List<Controller> EmptyControllers;
 
     public int FoodsOnMapCount { get; set; } = 0;
 
@@ -55,7 +56,8 @@ public class PlayingMap : IInitializeable, IPhysicsUpdatable
         Height = PlayingMapConfig.PlayingMapHeight;
         
         GameObjectsOnMap = new List<GameObject>();
-        PlayersOnMap = new List<Controller>();
+        ControllersOnMap = new List<Controller>();
+        EmptyControllers = new List<Controller>();
 
         _foodFactory = new FoodFactory(this);
         _playerFactory = new PlayerFactory(this, _agarioGame);
@@ -77,9 +79,9 @@ public class PlayingMap : IInitializeable, IPhysicsUpdatable
             HandleCollisions();
     }
 
-    public GameObject CreatePlayer(HumanController humanController = null)
+    public GameObject CreatePlayer(Controller controller)
     {
-        GameObject newPlayer = _playerFactory.CreatePlayer(_playerGameObjectDefaultRadius, humanController);
+        GameObject newPlayer = _playerFactory.CreatePlayer(_playerGameObjectDefaultRadius, controller);
 
         return newPlayer;
     }
@@ -99,26 +101,29 @@ public class PlayingMap : IInitializeable, IPhysicsUpdatable
     // Should throw an event instead of actually handling it
     private void HandlePlayerCollision()
     {
-        foreach (var player in new List<Controller>(PlayersOnMap))
+        foreach (var player in new List<Controller>(ControllersOnMap))
         {
-            ClosestGameObjectsToPlayerInfo info = GetClosestGameObjectsInfo(player.ParentGameObject);
+            if (player.TargetGameObject == null)
+                continue;
+            
+            ClosestGameObjectsToPlayerInfo info = GetClosestGameObjectsInfo(player.TargetGameObject);
 
             float foodMargin = info.ClosestFood.Shape.Radius * info.ClosestFood.Shape.Radius * _allowedGameObjectCollisionDepthModifier;
 
             if (info.FoodDistanceSqr < -foodMargin)
             {
-                player.ParentGameObject.GetComponent<PlayerGameObject>().EatFood(info.ClosestFood);
+                player.TargetGameObject.GetComponent<PlayerGameObject>().EatFood(info.ClosestFood);
             }
 
-            float playerMargin = info.ClosestPlayer.Shape.Radius * info.ClosestPlayer.Shape.Radius * _allowedGameObjectCollisionDepthModifier;
+            float playerMargin = info.ClosestPlayerController.TargetGameObject.Shape.Radius * info.ClosestPlayerController.TargetGameObject.Shape.Radius * _allowedGameObjectCollisionDepthModifier;
             
-            if (player.ParentGameObject.Shape.Radius < info.ClosestPlayer.Shape.Radius)
+            if (player.TargetGameObject.Shape.Radius < info.ClosestPlayerController.TargetGameObject.Shape.Radius)
                 continue;
             
             if (info.PlayerDistanceSqr < -playerMargin)
             {
-                player.ParentGameObject.GetComponent<PlayerGameObject>().EatFood(info.ClosestPlayer);
-                if (info.ClosestPlayer.GetComponent<Controller>().GetType() == typeof(HumanController))
+                player.TargetGameObject.GetComponent<PlayerGameObject>().EatFood(info.ClosestPlayerController);
+                if (info.ClosestPlayerController.GetType() == typeof(HumanController))
                     break;
             }
         }
@@ -126,21 +131,21 @@ public class PlayingMap : IInitializeable, IPhysicsUpdatable
 
     private void HandlePlayersOverlapWithBorder()
     {
-        foreach (var player in PlayersOnMap)
+        foreach (var player in ControllersOnMap)
         {
             Vector2f moveOutDirection = new Vector2f(0, 0);
             
-            if (player.ParentGameObject.Shape.Position.X - player.ParentGameObject.Shape.Radius < 0)
+            if (player.TargetGameObject.Shape.Position.X - player.TargetGameObject.Shape.Radius < 0)
                 moveOutDirection.X = 1;
-            else if (player.ParentGameObject.Shape.Position.X + player.ParentGameObject.Shape.Radius > Width)
+            else if (player.TargetGameObject.Shape.Position.X + player.TargetGameObject.Shape.Radius > Width)
                 moveOutDirection.X = -1;
         
-            if (player.ParentGameObject.Shape.Position.Y - player.ParentGameObject.Shape.Radius < 0)
+            if (player.TargetGameObject.Shape.Position.Y - player.TargetGameObject.Shape.Radius < 0)
                 moveOutDirection.Y = 1;
-            else if (player.ParentGameObject.Shape.Position.Y + player.ParentGameObject.Shape.Radius > Height)
+            else if (player.TargetGameObject.Shape.Position.Y + player.TargetGameObject.Shape.Radius > Height)
                 moveOutDirection.Y = -1;
         
-            player.ParentGameObject.GetComponent<PlayerGameObject>().Move(moveOutDirection);
+            player.TargetGameObject.GetComponent<PlayerGameObject>().Move(moveOutDirection);
         }
     }
 
@@ -176,10 +181,10 @@ public class PlayingMap : IInitializeable, IPhysicsUpdatable
     {
         ClosestGameObjectsToPlayerInfo info = new ClosestGameObjectsToPlayerInfo()
         {
-            Player = gameObject,
+            CurrentGameObject = gameObject,
             ClosestFood = null,
             FoodDistanceSqr = float.MaxValue,
-            ClosestPlayer = null,
+            ClosestPlayerController = null,
             PlayerDistanceSqr = float.MaxValue
         };
         
@@ -187,18 +192,7 @@ public class PlayingMap : IInitializeable, IPhysicsUpdatable
         {
             float collisionDepthSqr = gameObject.GetCollisionDepthSqr(other);
             
-            if (other.HasComponent<PlayerGameObject>())
-            {
-                if (gameObject == other)
-                    continue;
-
-                if (collisionDepthSqr < info.PlayerDistanceSqr)
-                {
-                    info.PlayerDistanceSqr = collisionDepthSqr;
-                    info.ClosestPlayer = other;
-                }
-            }
-            else
+            if (!other.HasComponent<PlayerGameObject>())
             {
                 if (collisionDepthSqr < info.FoodDistanceSqr)
                 {
@@ -206,7 +200,20 @@ public class PlayingMap : IInitializeable, IPhysicsUpdatable
                     info.ClosestFood = other;
                 }
             }
+        }
+        
+        foreach (var other in ControllersOnMap)
+        {
+            float collisionDepthSqr = gameObject.GetCollisionDepthSqr(other.TargetGameObject);
             
+            if (gameObject == other.TargetGameObject)
+                continue;
+
+            if (collisionDepthSqr < info.PlayerDistanceSqr)
+            {
+                info.PlayerDistanceSqr = collisionDepthSqr;
+                info.ClosestPlayerController = other;
+            }
         }
 
         return info;
@@ -214,10 +221,9 @@ public class PlayingMap : IInitializeable, IPhysicsUpdatable
     
     public void DeleteGameObject(GameObject gameObject)
     {
-        var component = gameObject.GetComponent<Controller>();
-        if (component != null)
-            PlayersOnMap.SwapRemove(component);
-        else
+        var component = gameObject.GetComponent<PlayerGameObject>();
+        bool isPlayer = false;
+        if (component == null)
             FoodsOnMapCount--;
         
         GameObjectsOnMap.SwapRemove(gameObject);

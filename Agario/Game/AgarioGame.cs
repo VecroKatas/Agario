@@ -36,7 +36,7 @@ public class AgarioGame : IGameRules
 
     public Action GameRestart { get; set; }
     
-    private bool _isMainPlayerAlive = true;
+    private bool _isMainPlayerAlive;
 
     private TextOnDisplay _gameOverText;
     private TextOnDisplay _statsText;
@@ -71,8 +71,8 @@ public class AgarioGame : IGameRules
         _localFontPath = GameConfig.LocalFontPath;
         
         PlayingMap.StartSimulation();
-
-        _humanController = new HumanController(playerKeyMap);
+        
+        InitializeControllers();
         
         GeneratePlayers();
         GenerateFood();
@@ -87,14 +87,30 @@ public class AgarioGame : IGameRules
         _statsText = InitText("Default stats", 30, new Color(160, 160, 160), new Vector2f(renderWindow.Size.X * .43f, renderWindow.Size.Y * .5f));
         _timeUntilRestartText = InitText("Restart time", 40, new Color(180, 180, 180), new Vector2f(renderWindow.Size.X * .38f, renderWindow.Size.Y * .7f));
     }
+
+    private void InitializeControllers()
+    {
+        _humanController = new HumanController(playerKeyMap);
+        PlayingMap.EmptyControllers.Add(_humanController);
+        
+        while (PlayingMap.EmptyControllers.Count < _maxPlayersOnMap)
+        {
+            PlayingMap.EmptyControllers.Add(new BotController());
+        }
+    }
     
     private void GeneratePlayers()
     {
-        _mainPlayer ??= CreateMainPLayer();
-        
-        while (PlayingMap.PlayersOnMap.Count < _maxPlayersOnMap)
+        foreach (var controller in new List<Controller>(PlayingMap.EmptyControllers))
         {
-            PlayingMap.CreatePlayer();
+            PlayingMap.CreatePlayer(controller);
+            PlayingMap.EmptyControllers.SwapRemove(controller);
+
+            if (controller.GetType() == typeof(HumanController))
+            {
+                SetMainPlayer(controller.TargetGameObject);
+                _isMainPlayerAlive = true;
+            }
         }
     }
 
@@ -111,6 +127,7 @@ public class AgarioGame : IGameRules
         GameObject mainPlayer = PlayingMap.CreatePlayer(_humanController);
         
         SetMainPlayer(mainPlayer);
+        _isMainPlayerAlive = true;
 
         return mainPlayer;
     }
@@ -149,16 +166,21 @@ public class AgarioGame : IGameRules
         UpdateGameObjectToFocusOn();
     }
     
-    public void PlayerDied(GameObject player)
+    public void PlayerDied(Controller controller)
     {
-        if (player.GetComponent<Controller>().GetType() == typeof(HumanController))
+        if (controller.GetType() == typeof(HumanController))
         {
             _isMainPlayerAlive = false;
 
-            UpdateStatsText(player);
+            UpdateStatsText(controller.TargetGameObject);
 
             PlayingMap.StopSimulation();
             PlayingMap.Reset();
+        }
+        else
+        {
+            PlayingMap.ControllersOnMap.SwapRemove(controller);
+            PlayingMap.EmptyControllers.Add(controller);
         }
     }
 

@@ -1,22 +1,21 @@
-﻿using Agario.Game.Interfaces;
+﻿namespace Agario.Infrastructure;
 
-namespace Agario.Infrastructure;
-
-public class Controller : IComponent
+public class Controller
 {
-    public GameObject ParentGameObject { get; protected set; }
     public GameObject TargetGameObject { get; protected set; }
     
     public Controller(){}
 
-    public Controller(GameObject parentGameObject)
+    public Controller(GameObject targetGameObject)
     {
-        ParentGameObject = parentGameObject;
+        TargetGameObject = targetGameObject;
     }
 
-    public virtual void SetParentGameObject(GameObject gameObject)
-        => ParentGameObject = gameObject;
+    public virtual void SetTargetGameObject(GameObject gameObject)
+        => TargetGameObject = gameObject;
 
-    public virtual void SetTargetGameObject(GameObject targetGameObject)
-        => TargetGameObject = targetGameObject;
+    public virtual void DestroyTargetGameObject()
+    {
+        TargetGameObject = null;
+    }
 }
