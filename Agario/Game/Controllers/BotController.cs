@@ -17,9 +17,12 @@ public class BotController : Controller, IUpdatable
 
     public override void SetTargetGameObject(GameObject gameObject)
     {
+        if (TargetGameObject != null && TargetGameObject.GetComponent<Food>().OnBeingEaten != null)
+            TargetGameObject.GetComponent<Food>().OnBeingEaten -= DestroyTargetGameObject;
         base.SetTargetGameObject(gameObject);
         PlayerGameObject = TargetGameObject.GetComponent<PlayerGameObject>();
         PlayerGameObject.SizeIncreased = () => {};
+        TargetGameObject.GetComponent<Food>().OnBeingEaten += DestroyTargetGameObject;
     }
 
     public override void DestroyTargetGameObject()

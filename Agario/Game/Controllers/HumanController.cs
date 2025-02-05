@@ -1,4 +1,5 @@
-﻿using Agario.Game.Interfaces;
+﻿using Agario.Game.Components;
+using Agario.Game.Interfaces;
 using Agario.Infrastructure;
 using Agario.Infrastructure.Utilities;
 using SFML.System;
@@ -24,9 +25,12 @@ public class HumanController : PlayerController, IUpdatable
 
     public override void SetTargetGameObject(GameObject gameObject)
     {
+        if (TargetGameObject != null && TargetGameObject.GetComponent<Food>().OnBeingEaten != null)
+            TargetGameObject.GetComponent<Food>().OnBeingEaten -= DestroyTargetGameObject;
         base.SetTargetGameObject(gameObject);
         PlayerGameObject = TargetGameObject.GetComponent<PlayerGameObject>();
         PlayerGameObject.SizeIncreased += PlayerGameObjSizeIncreased;
+        TargetGameObject.GetComponent<Food>().OnBeingEaten += DestroyTargetGameObject;
     }
 
     public override void DestroyTargetGameObject()
