@@ -56,7 +56,6 @@ public class PlayerFactory
         _playingMap.ControllersOnMap.Add(controller);
 
         newGameObject.GetComponent<Food>().OnBeingEaten += () => _playingMap.DeleteGameObject(newGameObject);
-        //newGameObject.GetComponent<Food>().OnBeingEaten += controller.DestroyTargetGameObject;
 
         return newGameObject;
     }
