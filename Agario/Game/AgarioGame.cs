@@ -2,6 +2,7 @@
 using Agario.Infrastructure;
 using Agario.Game.Factories;
 using Agario.Game.Interfaces;
+using Agario.Infrastructure.Systems.Audio;
 using Agario.Infrastructure.Utilities;
 using SFML.Graphics;
 using SFML.System;
@@ -86,6 +87,8 @@ public class AgarioGame : IGameRules
         _gameOverText = InitText("Game over!", 50, new Color(180, 180, 180), new Vector2f(renderWindow.Size.X * .41f, renderWindow.Size.Y * .4f));
         _statsText = InitText("Default stats", 30, new Color(160, 160, 160), new Vector2f(renderWindow.Size.X * .43f, renderWindow.Size.Y * .5f));
         _timeUntilRestartText = InitText("Restart time", 40, new Color(180, 180, 180), new Vector2f(renderWindow.Size.X * .38f, renderWindow.Size.Y * .7f));
+        
+        AudioSystem.PlayOnce(SoundTypes.GameStart);
     }
 
     private void InitializeControllers()
@@ -120,16 +123,6 @@ public class AgarioGame : IGameRules
         {
             PlayingMap.CreateFood(_random.Next(1, Enum.GetNames(typeof(FoodColor)).Length));
         }
-    }
-
-    private GameObject CreateMainPLayer()
-    {
-        GameObject mainPlayer = PlayingMap.CreatePlayer(_humanController);
-        
-        SetMainPlayer(mainPlayer);
-        _isMainPlayerAlive = true;
-
-        return mainPlayer;
     }
 
     public void SetMainPlayer(GameObject player)
@@ -176,6 +169,9 @@ public class AgarioGame : IGameRules
 
             PlayingMap.StopSimulation();
             PlayingMap.Reset();
+            
+            AudioSystem.StopAllSounds();
+            AudioSystem.PlayOnce(SoundTypes.GameOver);
         }
         else
         {

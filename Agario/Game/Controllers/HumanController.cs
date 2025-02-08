@@ -1,7 +1,9 @@
 ﻿using Agario.Game.Components;
 using Agario.Game.Interfaces;
 using Agario.Infrastructure;
+using Agario.Infrastructure.Systems.Audio;
 using Agario.Infrastructure.Utilities;
+using SFML.Audio;
 using SFML.System;
 
 namespace Agario.Game;
@@ -11,6 +13,7 @@ public class HumanController : PlayerController, IUpdatable
     public PlayerGameObject PlayerGameObject;
 
     public Action MainPlayerSizeIncreased { get; set; }
+    private bool movingSoundStarted = false;
 
     public HumanController(PlayerKeyMap playerKeyMap)
     {
@@ -21,6 +24,7 @@ public class HumanController : PlayerController, IUpdatable
         PlayerInputManager.AddOnDownKeyBinding(KeyBindAction.PlayerSwap, PlayerSwap);
 
         MainPlayerSizeIncreased += () => GameCycle.GetInstance().WorldCamera.ZoomOut(PlayerGameObject.GetSizeModifier());
+        MainPlayerSizeIncreased += PlayChomp;
     }
 
     public override void SetTargetGameObject(GameObject gameObject)
@@ -45,6 +49,11 @@ public class HumanController : PlayerController, IUpdatable
         {
             PlayerInputManager.ProcessInput();
             Move();
+            if (!movingSoundStarted)
+            {
+                AudioSystem.PlayLooped(SoundTypes.Moving, 30f);
+                movingSoundStarted = true;
+            }
         }
     }
     
@@ -59,6 +68,8 @@ public class HumanController : PlayerController, IUpdatable
         SetTargetGameObject(tmp);
         
         PlayerGameObject.AgarioGame.SetMainPlayer(TargetGameObject);
+        
+        AudioSystem.PlayOnce(SoundTypes.Swap, 50f);
     }
 
     public void Move()
@@ -72,5 +83,10 @@ public class HumanController : PlayerController, IUpdatable
     private void PlayerGameObjSizeIncreased()
     {
         MainPlayerSizeIncreased.Invoke();
+    }
+
+    private void PlayChomp()
+    {
+        AudioSystem.PlayOnce(SoundTypes.Chomp);
     }
 }

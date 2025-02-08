@@ -1,5 +1,6 @@
 ﻿using Agario.Game.Configs;
 using Agario.Game.Interfaces;
+using Agario.Infrastructure.Systems.Audio;
 using SFML.Graphics;
 using SFML.Window;
 
@@ -30,6 +31,14 @@ public class Boot
 
     private void PrepareLaunch()
     {
+        LoadConfigs();
+
+        AudioSystem audioSystem = AudioSystem.GetInstance(Path.Combine(AppContext.BaseDirectory, EntryPointConfig.SoundsFolder));
+        audioSystem.LoadSounds("*.mp3");
+    }
+
+    private void LoadConfigs()
+    {
         bool isDevelop = AppContext.BaseDirectory.Contains("bin\\Debug");
         if (isDevelop)
         {
@@ -42,6 +51,7 @@ public class Boot
         {
             FileSyncService.SyncFolders(EntryPointConfig.ConfigsFolder, EntryPointConfig.ConfigsFolder, "*.ini");
             FileSyncService.SyncFolders(EntryPointConfig.FontsFolder, EntryPointConfig.FontsFolder, "*.ttf");
+            FileSyncService.SyncFolders(EntryPointConfig.SoundsFolder, EntryPointConfig.SoundsFolder, "*.mp3");
         }
         
         ConfigService.LoadConfig(typeof(ConfigsConfig), EntryPointConfig.ConfigsConfigName);
