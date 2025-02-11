@@ -21,7 +21,7 @@ public static class FileSyncService
             Directory.CreateDirectory(destinationFolderPath);
         }
 
-        foreach (var sourceFile in Directory.GetFiles(sourceFolderPath, filePattern, SearchOption.AllDirectories))
+        foreach (var sourceFile in Directory.GetFiles(sourceFolderPath, filePattern, SearchOption.TopDirectoryOnly))
         {
             string relativePath = Path.GetRelativePath(sourceFolderPath, sourceFile);
             string destinationFile = Path.Combine(destinationFolderPath, relativePath);

@@ -1,6 +1,7 @@
 ﻿using Agario.Game.Configs;
 using Agario.Game.Interfaces;
 using Agario.Infrastructure.Systems.Audio;
+using Agario.Infrastructure.Utilities;
 using SFML.Graphics;
 using SFML.Window;
 
@@ -39,7 +40,8 @@ public class Boot
 
     private void LoadConfigs()
     {
-        bool isDevelop = AppContext.BaseDirectory.Contains("bin\\Debug");
+        //bool isDevelop = AppContext.BaseDirectory.Contains("bin\\Debug");
+        bool isDevelop = !string.IsNullOrEmpty(SolutionPathUtility.GetSolutionPath());
         if (isDevelop)
         {
             FileSyncService.SyncFolders("", "", "*.ini");
