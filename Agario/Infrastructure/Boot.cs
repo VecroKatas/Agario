@@ -33,8 +33,8 @@ public class Boot
     {
         LoadConfigs();
 
-        AudioSystem audioSystem = AudioSystem.GetInstance(Path.Combine(AppContext.BaseDirectory, EntryPointConfig.SoundsFolder));
-        audioSystem.LoadSounds("*.mp3");
+        AudioPlayer audioPlayer = AudioPlayer.GetInstance(Path.Combine(AppContext.BaseDirectory, EntryPointConfig.SoundsFolder));
+        audioPlayer.LoadSounds("*.mp3");
     }
 
     private void LoadConfigs()

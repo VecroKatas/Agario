@@ -21,7 +21,7 @@ public class BotController : Controller, IUpdatable
             TargetGameObject.GetComponent<Food>().OnBeingEaten -= DestroyTargetGameObject;
         base.SetTargetGameObject(gameObject);
         PlayerGameObject = TargetGameObject.GetComponent<PlayerGameObject>();
-        PlayerGameObject.SizeIncreased = () => {};
+        PlayerGameObject.SizeIncreased = (other) => {};
         TargetGameObject.GetComponent<Food>().OnBeingEaten += DestroyTargetGameObject;
     }
 

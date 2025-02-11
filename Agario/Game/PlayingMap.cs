@@ -2,6 +2,7 @@
 using Agario.Game.Factories;
 using Agario.Game.Interfaces;
 using Agario.Infrastructure;
+using Agario.Infrastructure.Systems.Audio;
 using Agario.Infrastructure.Utilities;
 using SFML.System;
 

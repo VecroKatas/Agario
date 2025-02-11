@@ -3,7 +3,6 @@ using Agario.Game.Interfaces;
 using Agario.Infrastructure;
 using Agario.Infrastructure.Systems.Audio;
 using Agario.Infrastructure.Utilities;
-using SFML.Audio;
 using SFML.System;
 
 namespace Agario.Game;
@@ -24,7 +23,6 @@ public class HumanController : PlayerController, IUpdatable
         PlayerInputManager.AddOnDownKeyBinding(KeyBindAction.PlayerSwap, PlayerSwap);
 
         MainPlayerSizeIncreased += () => GameCycle.GetInstance().WorldCamera.ZoomOut(PlayerGameObject.GetSizeModifier());
-        MainPlayerSizeIncreased += PlayChomp;
     }
 
     public override void SetTargetGameObject(GameObject gameObject)
@@ -33,7 +31,7 @@ public class HumanController : PlayerController, IUpdatable
             TargetGameObject.GetComponent<Food>().OnBeingEaten -= DestroyTargetGameObject;
         base.SetTargetGameObject(gameObject);
         PlayerGameObject = TargetGameObject.GetComponent<PlayerGameObject>();
-        PlayerGameObject.SizeIncreased += PlayerGameObjSizeIncreased;
+        PlayerGameObject.SizeIncreased += (other) => PlayChomp(other);
         TargetGameObject.GetComponent<Food>().OnBeingEaten += DestroyTargetGameObject;
     }
 
@@ -51,7 +49,7 @@ public class HumanController : PlayerController, IUpdatable
             Move();
             if (!movingSoundStarted)
             {
-                AudioSystem.PlayLooped(SoundTypes.Moving, 30f);
+                AudioPlayer.PlayLooped("Moving", 10f);
                 movingSoundStarted = true;
             }
         }
@@ -69,7 +67,7 @@ public class HumanController : PlayerController, IUpdatable
         
         PlayerGameObject.AgarioGame.SetMainPlayer(TargetGameObject);
         
-        AudioSystem.PlayOnce(SoundTypes.Swap, 50f);
+        AudioPlayer.PlayOnce("Swap", 50f);
     }
 
     public void Move()
@@ -80,13 +78,11 @@ public class HumanController : PlayerController, IUpdatable
         PlayerGameObject.Move(moveDirection);
     }
 
-    private void PlayerGameObjSizeIncreased()
+    private void PlayChomp(GameObject other)
     {
-        MainPlayerSizeIncreased.Invoke();
-    }
-
-    private void PlayChomp()
-    {
-        AudioSystem.PlayOnce(SoundTypes.Chomp);
+        if (other.HasComponent<PlayerGameObject>())
+            AudioPlayer.PlayOnce("PlayerChomp", 50f);
+        else
+            AudioPlayer.PlayOnce("FoodChomp", 80f);
     }
 }

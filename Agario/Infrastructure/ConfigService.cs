@@ -16,29 +16,51 @@ public static class ConfigService
         else
             path = Path.Combine(ExecutableConfigDirectory, EntryPointConfig.ConfigsFolder, fileName);
         
-        Dictionary<string, string> configData = ReadFile(path);
+        Dictionary<string, List<string>> configData = ReadFile(path);
         
         foreach (var field in configType.GetFields(BindingFlags.Public | BindingFlags.Static))
         {
-            if (!configData.TryGetValue(field.Name, out string value) || string.IsNullOrEmpty(value))
+            if (!configData.TryGetValue(field.Name, out List<string> values) || values == null)
                 continue;
 
-            if (field.FieldType == typeof(uint) && uint.TryParse(value, out uint uintValue))
-                field.SetValue(null, uintValue);
-            else if (field.FieldType == typeof(int) && int.TryParse(value, out int intValue))
-                field.SetValue(null, intValue);
-            else if (field.FieldType == typeof(bool) && bool.TryParse(value, out bool boolValue))
-                field.SetValue(null, boolValue);
-            else if (field.FieldType == typeof(float) && float.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out float floatValue))
-                field.SetValue(null, floatValue);
-            else if (field.FieldType == typeof(string))
-                field.SetValue(null, value);
+            foreach (var value in values)
+            {
+                if (field.FieldType == typeof(List<string>))
+                    SetListValue(field, value);
+                else
+                    SetValue(field, value);
+            }
         }
     }
 
-    private static Dictionary<string, string> ReadFile(string filePath)
+    private static void SetValue(FieldInfo field, string value)
     {
-        Dictionary<string, string> configData = new();
+        if (field.FieldType == typeof(uint) && uint.TryParse(value, out uint uintValue))
+            field.SetValue(null, uintValue);
+        else if (field.FieldType == typeof(int) && int.TryParse(value, out int intValue))
+            field.SetValue(null, intValue);
+        else if (field.FieldType == typeof(bool) && bool.TryParse(value, out bool boolValue))
+            field.SetValue(null, boolValue);
+        else if (field.FieldType == typeof(float) && float.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out float floatValue))
+            field.SetValue(null, floatValue);
+        else if (field.FieldType == typeof(string))
+            field.SetValue(null, value);
+    }
+
+    private static void SetListValue(FieldInfo field, string value)
+    {
+        if (field.GetValue(null) == null)
+            field.SetValue(null,new List<string>());
+
+        if (field.GetValue(null) is List<string> list)
+        {
+            list.Add(value);
+        }
+    }
+
+    private static Dictionary<string, List<string>> ReadFile(string filePath)
+    {
+        Dictionary<string, List<string>> configData = new();
 
         foreach (var line in File.ReadAllLines(filePath))
         {
@@ -49,7 +71,9 @@ public static class ConfigService
             var keyValue = trimmedLine.Split('=', 2);
             if (keyValue.Length == 2)
             {
-                configData[keyValue[0].Trim()] = keyValue[1].Trim();
+                if (!configData.ContainsKey(keyValue[0].Trim()))
+                    configData[keyValue[0].Trim()] = new List<string>();
+                configData[keyValue[0].Trim()].Add(keyValue[1].Trim());
             }
         }
 

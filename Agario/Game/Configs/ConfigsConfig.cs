@@ -6,6 +6,7 @@ namespace Agario.Game.Configs;
 public static class ConfigsConfig
 {
     public static string GameConfig;
+    public static string AudioConfig;
     public static string FontsConfig;
     public static string GameObjectConfig;
     public static string PlayingMapConfig;

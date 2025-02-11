@@ -26,7 +26,7 @@ public class PlayerGameObject : IComponent
     public int FoodEaten { get; private set; }
     public int PlayersEaten { get; private set; }
 
-    public Action SizeIncreased { get; set; } = new Action(() =>{});
+    public Action<GameObject> SizeIncreased { get; set; } = new Action<GameObject>((gameobj) =>{});
     private float _lastEatenValue = 0;
 
     public PlayerGameObject(AgarioGame agarioGame, GameObject gameObject)
@@ -83,7 +83,7 @@ public class PlayerGameObject : IComponent
         
         FoodEaten++;
         
-        SizeIncreased.Invoke();
+        SizeIncreased.Invoke(other);
         
         foodComponent.BeingEaten();
     }

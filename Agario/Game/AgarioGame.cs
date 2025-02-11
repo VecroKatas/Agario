@@ -88,7 +88,7 @@ public class AgarioGame : IGameRules
         _statsText = InitText("Default stats", 30, new Color(160, 160, 160), new Vector2f(renderWindow.Size.X * .43f, renderWindow.Size.Y * .5f));
         _timeUntilRestartText = InitText("Restart time", 40, new Color(180, 180, 180), new Vector2f(renderWindow.Size.X * .38f, renderWindow.Size.Y * .7f));
         
-        AudioSystem.PlayOnce(SoundTypes.GameStart);
+        AudioPlayer.PlayOnce("GameStart");
     }
 
     private void InitializeControllers()
@@ -170,8 +170,8 @@ public class AgarioGame : IGameRules
             PlayingMap.StopSimulation();
             PlayingMap.Reset();
             
-            AudioSystem.StopAllSounds();
-            AudioSystem.PlayOnce(SoundTypes.GameOver);
+            AudioPlayer.StopAllSounds();
+            AudioPlayer.PlayOnce("GameOver");
         }
         else
         {
