@@ -6,8 +6,10 @@ namespace Agario.Game.AnimationSystem;
 
 public class AnimatorBase : IComponent, IUpdatable
 {
-    private Animation currentAnimation;
     public GameObject GameObject;
+    
+    protected Animation _currentAnimation;
+    protected bool _animationNotFinished = false;
     
     private int _currentFrame = 0;
     private int _ticksPassed;
@@ -27,10 +29,10 @@ public class AnimatorBase : IComponent, IUpdatable
     {
         if (AnimationsManager.Animations.ContainsKey(name))
         {
-            if (currentAnimation.AnimationInfo == null || currentAnimation.AnimationInfo.Name != name)
+            if (_currentAnimation.AnimationInfo == null || _currentAnimation.AnimationInfo.Name != name)
             {
                 GameObject.Shape.Texture = AnimationsManager.Animations[name].Sprite.Texture;
-                currentAnimation = AnimationsManager.Animations[name];
+                _currentAnimation = AnimationsManager.Animations[name];
                 ResetCurrentAnimation();
             }
         }
@@ -38,22 +40,26 @@ public class AnimatorBase : IComponent, IUpdatable
 
     public void Update()
     {
-        if (currentAnimation.AnimationInfo != null)
+        if (_currentAnimation.AnimationInfo != null)
         {
             _ticksPassed++;
-            if (_ticksPassed >= currentAnimation.TicksPerFrame)
+            if (_ticksPassed >= _currentAnimation.TicksPerFrame)
             {
-                _currentFrame = (_currentFrame + 1) % currentAnimation.AnimationInfo.FrameCount;
+                _animationNotFinished = true;
+                _currentFrame = (_currentFrame + 1) % _currentAnimation.AnimationInfo.FrameCount;
                 _ticksPassed = 0;
                 
-                currentAnimation.Update(_currentFrame);
-                GameObject.Shape.TextureRect = currentAnimation.Sprite.TextureRect;
+                _currentAnimation.Update(_currentFrame);
+                GameObject.Shape.TextureRect = _currentAnimation.Sprite.TextureRect;
+
+                if (_currentFrame == 0)
+                    _animationNotFinished = false;
             }
         }
     }
 
     private void ResetCurrentAnimation()
     {
-        _currentFrame = currentAnimation.AnimationInfo.StartFrame;
+        _currentFrame = _currentAnimation.AnimationInfo.StartFrame;
     }
 }

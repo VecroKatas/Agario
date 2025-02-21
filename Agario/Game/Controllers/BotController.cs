@@ -24,7 +24,7 @@ public class BotController : Controller, IUpdatable
         base.SetTargetGameObject(gameObject);
         
         PlayerGameObject = TargetGameObject.GetComponent<PlayerGameObject>();
-        PlayerGameObject.SizeIncreased = (other) => {};
+        PlayerGameObject.SizeIncreased = (other) => EatOther(other);
         TargetGameObject.GetComponent<Food>().OnBeingEaten += DestroyTargetGameObject;
         
         
@@ -57,6 +57,14 @@ public class BotController : Controller, IUpdatable
         }
         
         _animator.Play("BotPlayerWalking");
+    }
+
+    private void EatOther(GameObject other)
+    {
+        if (other.HasComponent<PlayerGameObject>())
+        {
+            _animator.Play("BotPlayerEating");
+        }
     }
     
     private Vector2f GetBotMoveDirection()

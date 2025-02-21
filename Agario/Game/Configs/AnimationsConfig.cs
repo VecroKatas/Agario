@@ -6,10 +6,16 @@ namespace Agario.Game.Configs;
 public static class AnimationsConfig
 {
     public static Dictionary<string, AnimationConfig> Dictionary = new Dictionary<string, AnimationConfig>();
+    
     public static string HumanPlayerWalkingDownPath;
     public static string HumanPlayerWalkingUpPath;
     public static string HumanPlayerWalkingLeftPath;
     public static string HumanPlayerWalkingRightPath;
+    
+    public static string HumanPlayerEatingDownPath;
+    public static string HumanPlayerEatingUpPath;
+    public static string HumanPlayerEatingLeftPath;
+    public static string HumanPlayerEatingRightPath;
 
     public static void LoadAnimationConfigs()
     {

@@ -33,7 +33,7 @@ public class HumanController : PlayerController, IUpdatable
         base.SetTargetGameObject(gameObject);
         
         PlayerGameObject = TargetGameObject.GetComponent<PlayerGameObject>();
-        PlayerGameObject.SizeIncreased += (other) => PlayChomp(other);
+        PlayerGameObject.SizeIncreased += (other) => EatOther(other);
         TargetGameObject.GetComponent<Food>().OnBeingEaten += DestroyTargetGameObject;
         
         if (_animator != null)
@@ -91,10 +91,13 @@ public class HumanController : PlayerController, IUpdatable
         _animator.Play("HumanPlayerWalking");
     }
 
-    private void PlayChomp(GameObject other)
+    private void EatOther(GameObject other)
     {
         if (other.HasComponent<PlayerGameObject>())
+        {
             AudioPlayer.PlayOnce("PlayerChomp", 50f);
+            _animator.Play("HumanPlayerEating");
+        }
         else
             AudioPlayer.PlayOnce("FoodChomp", 80f);
     }
