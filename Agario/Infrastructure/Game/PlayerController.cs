@@ -1,6 +1,4 @@
-﻿using Agario.Game.Interfaces;
-
-namespace Agario.Infrastructure;
+﻿namespace Agario.Infrastructure;
 
 public class PlayerController : Controller
 {

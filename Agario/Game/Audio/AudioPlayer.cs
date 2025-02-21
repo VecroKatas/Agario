@@ -4,15 +4,6 @@ using SFML.Audio;
 
 namespace Agario.Infrastructure.Systems.Audio;
 
-/*public enum SoundTypes
-{
-    Chomp,
-    Moving,
-    Swap,
-    GameStart,
-    GameOver,
-}*/
-
 public class AudioPlayer
 {
     private static Random _random = new Random();
@@ -50,7 +41,7 @@ public class AudioPlayer
                 List<Sound> sounds = new List<Sound>();
                 foreach (var soundPath in soundPaths)
                 {
-                    string fullPath = Path.Combine(AppContext.BaseDirectory, EntryPointConfig.SoundsFolder, soundPath);
+                    string fullPath = Path.Combine(_soundFolderPath, soundPath);
                     if (File.Exists(fullPath))
                     {
                         Sound sound = new Sound(new SoundBuffer(fullPath));

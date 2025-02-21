@@ -11,6 +11,8 @@ public class HumanController : PlayerController, IUpdatable
 {
     public PlayerGameObject PlayerGameObject;
 
+    private Animator _animator = null;
+
     public Action MainPlayerSizeIncreased { get; set; }
     private bool movingSoundStarted = false;
 
@@ -47,11 +49,6 @@ public class HumanController : PlayerController, IUpdatable
         {
             PlayerInputManager.ProcessInput();
             Move();
-            if (!movingSoundStarted)
-            {
-                AudioPlayer.PlayLooped("Moving", 10f);
-                movingSoundStarted = true;
-            }
         }
     }
     
@@ -76,6 +73,19 @@ public class HumanController : PlayerController, IUpdatable
         Vector2f moveDirection = GameCycle.GetInstance().GetScreenCenter().CalculateNormalisedDirection(mousePosition);
         
         PlayerGameObject.Move(moveDirection);
+        
+        if (!movingSoundStarted)
+        {
+            AudioPlayer.PlayLooped("Moving", 10f);
+            movingSoundStarted = true;
+        }
+
+        if (_animator == null)
+        {
+            _animator = TargetGameObject.GetComponent<Animator>();
+        }
+        
+        _animator.Play("HumanPlayerWalkingDown");
     }
 
     private void PlayChomp(GameObject other)

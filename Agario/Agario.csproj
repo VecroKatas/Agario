@@ -12,18 +12,12 @@
     </ItemGroup>
 
     <ItemGroup>
-        <None Include="entrypoint.ini">
+        <Content Include="entrypoint.ini">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
-        <None Include="Assets\Configs\*.ini">
+        </Content>
+        <Content Include="Assets\**\*.*">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
-        <None Include="Assets\Sounds\*.mp3">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
-        <None Include="Assets\Fonts\*.ttf">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
+        </Content>
     </ItemGroup>
 
 </Project>

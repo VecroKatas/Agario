@@ -35,14 +35,18 @@ public class Boot
 
         AudioPlayer audioPlayer = AudioPlayer.GetInstance(Path.Combine(AppContext.BaseDirectory, EntryPointConfig.SoundsFolder));
         audioPlayer.LoadSounds("*.mp3");
+        
+        Animator.LoadAnimations();
     }
 
     private void LoadConfigs()
     {
-        ConfigService.LoadConfig(typeof(EntryPointConfig), _entrypointPath);
+        ConfigService.LoadStaticConfig(typeof(EntryPointConfig), _entrypointPath);
         
-        ConfigService.LoadConfig(typeof(ConfigsConfig), EntryPointConfig.ConfigsConfigName);
+        ConfigService.LoadStaticConfig(typeof(ConfigsConfig), EntryPointConfig.ConfigsConfigName);
         
         ConfigsConfig.LoadConfigs();
+        
+        AnimationsConfig.LoadAnimationConfigs();
     }
 }

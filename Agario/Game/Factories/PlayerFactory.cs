@@ -50,6 +50,11 @@ public class PlayerFactory
         GameObject newGameObject = new GameObject(circle);
         newGameObject.AddComponent(new PlayerGameObject(_agarioGame, newGameObject));
         
+        if (controller.GetType() == typeof(HumanController))
+        {
+            newGameObject.AddComponent(new Animator());
+        }
+        
         controller.SetTargetGameObject(newGameObject);
         
         _playingMap.GameObjectsOnMap.Add(newGameObject);
