@@ -1,8 +1,12 @@
-﻿namespace Agario.Infrastructure;
+﻿using Agario.Game.AnimationSystem;
+
+namespace Agario.Infrastructure;
 
 public class Controller
 {
     public GameObject TargetGameObject { get; protected set; }
+    
+    protected AnimatorBase _animator = null;
     
     public Controller(){}
 

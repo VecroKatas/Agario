@@ -1,4 +1,5 @@
-﻿using Agario.Game.Components;
+﻿using Agario.Game.AnimationSystem;
+using Agario.Game.Components;
 using Agario.Game.Interfaces;
 using Agario.Infrastructure;
 using Agario.Infrastructure.Utilities;
@@ -19,10 +20,16 @@ public class BotController : Controller, IUpdatable
     {
         if (TargetGameObject != null && TargetGameObject.GetComponent<Food>().OnBeingEaten != null)
             TargetGameObject.GetComponent<Food>().OnBeingEaten -= DestroyTargetGameObject;
+        
         base.SetTargetGameObject(gameObject);
+        
         PlayerGameObject = TargetGameObject.GetComponent<PlayerGameObject>();
         PlayerGameObject.SizeIncreased = (other) => {};
         TargetGameObject.GetComponent<Food>().OnBeingEaten += DestroyTargetGameObject;
+        
+        
+        if (_animator != null)
+            _animator.SetParentGameObject(TargetGameObject);
     }
 
     public override void DestroyTargetGameObject()
@@ -41,7 +48,15 @@ public class BotController : Controller, IUpdatable
 
     public void Move()
     {
-        PlayerGameObject.Move(GetBotMoveDirection());
+        Vector2f moveDirection = GetBotMoveDirection();
+        PlayerGameObject.Move(moveDirection);
+
+        if (_animator == null)
+        {
+            _animator = TargetGameObject.GetComponent<AnimatorBase>();
+        }
+        
+        _animator.Play("BotPlayerWalking");
     }
     
     private Vector2f GetBotMoveDirection()

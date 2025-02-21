@@ -1,4 +1,5 @@
-﻿using Agario.Game.Components;
+﻿using Agario.Game.AnimationSystem;
+using Agario.Game.Components;
 using Agario.Infrastructure;
 using Agario.Infrastructure.Utilities;
 using SFML.Graphics;
@@ -52,7 +53,11 @@ public class PlayerFactory
         
         if (controller.GetType() == typeof(HumanController))
         {
-            newGameObject.AddComponent(new Animator());
+            newGameObject.AddComponent(new HumanPlayerAnimator() as AnimatorBase);
+        }
+        else
+        {
+            newGameObject.AddComponent(new BotPlayerAnimator() as AnimatorBase);
         }
         
         controller.SetTargetGameObject(newGameObject);

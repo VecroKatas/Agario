@@ -26,6 +26,8 @@ public class PlayerGameObject : IComponent
     public int FoodEaten { get; private set; }
     public int PlayersEaten { get; private set; }
 
+    public Vector2f CurrentMoveDirection;
+
     public Action<GameObject> SizeIncreased { get; set; } = new Action<GameObject>((gameobj) =>{});
     private float _lastEatenValue = 0;
 
@@ -69,6 +71,7 @@ public class PlayerGameObject : IComponent
     public void Move(Vector2f moveDirection)
     {
         moveDirection = AgarioGame.PlayingMap.AdjustMoveDirection(this, moveDirection);
+        CurrentMoveDirection = moveDirection;
         GameObject.Shape.Position += moveDirection * _currentMoveSpeed * Time.DeltaTime;
     }
 

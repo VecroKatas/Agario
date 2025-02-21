@@ -36,7 +36,7 @@ public class Boot
         AudioPlayer audioPlayer = AudioPlayer.GetInstance(Path.Combine(AppContext.BaseDirectory, EntryPointConfig.SoundsFolder));
         audioPlayer.LoadSounds("*.mp3");
         
-        Animator.LoadAnimations();
+        AnimationsManager.LoadAnimations();
     }
 
     private void LoadConfigs()

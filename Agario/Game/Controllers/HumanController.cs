@@ -1,4 +1,5 @@
-﻿using Agario.Game.Components;
+﻿using Agario.Game.AnimationSystem;
+using Agario.Game.Components;
 using Agario.Game.Interfaces;
 using Agario.Infrastructure;
 using Agario.Infrastructure.Systems.Audio;
@@ -10,9 +11,6 @@ namespace Agario.Game;
 public class HumanController : PlayerController, IUpdatable
 {
     public PlayerGameObject PlayerGameObject;
-
-    private Animator _animator = null;
-
     public Action MainPlayerSizeIncreased { get; set; }
     private bool movingSoundStarted = false;
 
@@ -31,10 +29,15 @@ public class HumanController : PlayerController, IUpdatable
     {
         if (TargetGameObject != null && TargetGameObject.GetComponent<Food>().OnBeingEaten != null)
             TargetGameObject.GetComponent<Food>().OnBeingEaten -= DestroyTargetGameObject;
+        
         base.SetTargetGameObject(gameObject);
+        
         PlayerGameObject = TargetGameObject.GetComponent<PlayerGameObject>();
         PlayerGameObject.SizeIncreased += (other) => PlayChomp(other);
         TargetGameObject.GetComponent<Food>().OnBeingEaten += DestroyTargetGameObject;
+        
+        if (_animator != null)
+            _animator.SetParentGameObject(TargetGameObject);
     }
 
     public override void DestroyTargetGameObject()
@@ -82,10 +85,10 @@ public class HumanController : PlayerController, IUpdatable
 
         if (_animator == null)
         {
-            _animator = TargetGameObject.GetComponent<Animator>();
+            _animator = TargetGameObject.GetComponent<AnimatorBase>();
         }
-        
-        _animator.Play("HumanPlayerWalkingDown");
+
+        _animator.Play("HumanPlayerWalking");
     }
 
     private void PlayChomp(GameObject other)
