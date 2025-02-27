@@ -1,32 +1,32 @@
 ﻿using Agario.Game.Configs;
 using SFML.Graphics;
 
-public struct Animation
+public class Animation
 {
     public Sprite Sprite;
-    public AnimationConfig AnimationInfo;
+    public AnimationConfig Info;
     
     private int _gameFPS;
     public int TicksPerFrame;
 
-    public Animation(Sprite sprite, AnimationConfig animationInfo)
+    public Animation(Sprite sprite, AnimationConfig info)
     {
         _gameFPS = GameConfig.TargetFPS;
         
         Sprite = sprite;
-        AnimationInfo = animationInfo;
-        TicksPerFrame = _gameFPS / AnimationInfo.FramesPerSecond;
+        Info = info;
+        TicksPerFrame = _gameFPS / Info.FramesPerSecond;
 
-        SetFrame(animationInfo.StartFrame);
+        SetFrame(info.StartFrame);
     }
 
     private void SetFrame(int frame)
     {
-        Sprite.TextureRect = new IntRect(AnimationInfo.StartingIntRectLeft + frame * AnimationInfo.FrameWidth, AnimationInfo.StartingIntRectTop, AnimationInfo.FrameWidth, AnimationInfo.FrameHeight);
+        Sprite.TextureRect = new IntRect(Info.StartingIntRectLeft + frame * Info.FrameWidth, Info.StartingIntRectTop, Info.FrameWidth, Info.FrameHeight);
     }
 
-    public void Update(int currentFrame)
+    public void UpdateFrame(int currentFrame)
     {
-        SetFrame(AnimationInfo.StartFrame + currentFrame);
+        SetFrame(Info.StartFrame + currentFrame);
     }
 }

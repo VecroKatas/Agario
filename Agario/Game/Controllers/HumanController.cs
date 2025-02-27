@@ -96,7 +96,7 @@ public class HumanController : PlayerController, IUpdatable
         if (other.HasComponent<PlayerGameObject>())
         {
             AudioPlayer.PlayOnce("PlayerChomp", 50f);
-            _animator.Play("HumanPlayerEating");
+            //_animator.Play("HumanPlayerEating");
         }
         else
             AudioPlayer.PlayOnce("FoodChomp", 80f);

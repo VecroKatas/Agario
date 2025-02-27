@@ -1,4 +1,5 @@
-﻿using Agario.Game.Interfaces;
+﻿using Agario.Game.AnimationSystem.Conditions;
+using Agario.Game.Interfaces;
 using Agario.Infrastructure;
 using SFML.System;
 
@@ -8,11 +9,11 @@ public class AnimatorBase : IComponent, IUpdatable
 {
     public GameObject GameObject;
     
-    protected Animation _currentAnimation;
-    protected bool _animationNotFinished = false;
-    
     private int _currentFrame = 0;
     private int _ticksPassed;
+    
+    private AnimationFSM _stateMachine = new();
+    private readonly Dictionary<string, BaseAnimationParameter> _parameters = new();
     
     public AnimatorBase() 
     {
@@ -25,41 +26,53 @@ public class AnimatorBase : IComponent, IUpdatable
         GameObject.Shape.Scale = new Vector2f(2, 2);
     }
     
-    public virtual void Play(string name)
+    public void Setup(AnimationGraph data)
     {
-        if (AnimationsManager.Animations.ContainsKey(name))
+        foreach (var states in data.States)
         {
-            if (_currentAnimation.AnimationInfo == null || _currentAnimation.AnimationInfo.Name != name)
-            {
-                GameObject.Shape.Texture = AnimationsManager.Animations[name].Sprite.Texture;
-                _currentAnimation = AnimationsManager.Animations[name];
-                ResetCurrentAnimation();
-            }
+            _stateMachine.AddState(states);
         }
-    }
+			
+        foreach (var transition in data.Transitions)
+        {
+            _stateMachine.AddTransition(transition);
+        }
 
+        foreach (var parameter in data.Parameters)
+        {
+            _parameters.TryAdd(parameter.Key, parameter.Value);
+        }
+        
+        _stateMachine.ChangeState(data.InitialState);
+
+        _stateMachine.StateChanged += state => StopPlaying(state.Name);
+    }
+    
     public void Update()
     {
-        if (_currentAnimation.AnimationInfo != null)
-        {
-            _ticksPassed++;
-            if (_ticksPassed >= _currentAnimation.TicksPerFrame)
-            {
-                _animationNotFinished = true;
-                _currentFrame = (_currentFrame + 1) % _currentAnimation.AnimationInfo.FrameCount;
-                _ticksPassed = 0;
-                
-                _currentAnimation.Update(_currentFrame);
-                GameObject.Shape.TextureRect = _currentAnimation.Sprite.TextureRect;
+        _stateMachine.Update();
+        var frame = _stateMachine.GetCurrentFrame();
+        var texture = _stateMachine.GetCurrentTexture();
 
-                if (_currentFrame == 0)
-                    _animationNotFinished = false;
-            }
-        }
+        GameObject.Shape.Texture = texture;
+        GameObject.Shape.TextureRect = frame;
     }
 
-    private void ResetCurrentAnimation()
+    public void SetBoolParameter(string name, bool value)
     {
-        _currentFrame = _currentAnimation.AnimationInfo.StartFrame;
+        if (_parameters.TryGetValue(name, out var parameter))
+        {
+            parameter.SetValue(value);
+        }
+    }
+    
+    public virtual void Play(string name)
+    {
+        SetBoolParameter(name, true);
+    }
+
+    public void StopPlaying(string name)
+    {
+        SetBoolParameter(name, false);
     }
 }

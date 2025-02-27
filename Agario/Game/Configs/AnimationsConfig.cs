@@ -7,6 +7,8 @@ public static class AnimationsConfig
 {
     public static Dictionary<string, AnimationConfig> Dictionary = new Dictionary<string, AnimationConfig>();
     
+    public static string HumanPlayerIdlePath;
+    
     public static string HumanPlayerWalkingDownPath;
     public static string HumanPlayerWalkingUpPath;
     public static string HumanPlayerWalkingLeftPath;

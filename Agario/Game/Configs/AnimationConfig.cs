@@ -4,8 +4,10 @@ namespace Agario.Game.Configs;
 
 public class AnimationConfig : IConfig
 {
+    public string Type;
     public string Name;
     public string FileName;
+    public bool CanBeInterrupted;
     public int StartFrame;
     public int FrameCount;
     public int FramesPerSecond;

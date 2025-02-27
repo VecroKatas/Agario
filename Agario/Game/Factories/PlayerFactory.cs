@@ -51,13 +51,24 @@ public class PlayerFactory
         GameObject newGameObject = new GameObject(circle);
         newGameObject.AddComponent(new PlayerGameObject(_agarioGame, newGameObject));
         
-        if (controller.GetType() == typeof(HumanController))
+        /*if (controller.GetType() == typeof(HumanController))
         {
             newGameObject.AddComponent(new HumanPlayerAnimator() as AnimatorBase);
         }
         else
         {
             newGameObject.AddComponent(new BotPlayerAnimator() as AnimatorBase);
+        }*/
+        
+        var animator = newGameObject.AddComponent(new HumanPlayerAnimator() as AnimatorBase);
+        //animator.Setup(BuildPlayerAnimationGraph());
+        if (controller.GetType() == typeof(HumanController))
+        {
+            animator.Setup(BuildPlayerAnimationGraph());
+        }
+        else
+        {
+            animator.Setup(BuildBotAnimationGraph());
         }
         
         controller.SetTargetGameObject(newGameObject);
@@ -86,4 +97,42 @@ public class PlayerFactory
         
         return new Vector2f( randomVector.X * _playingMap.Width, randomVector.Y * _playingMap.Height);
     }
+    
+    private AnimationGraph BuildPlayerAnimationGraph()
+    {
+        //var skin = GetCurrentPlayerSkin();
+        var animations = AnimationsManager.Animations;
+
+        return new AnimationGraphBuilder()
+            .AddState("AnyState", animations["HumanPlayerIdle"])
+            .AddState("HumanPlayerWalkingRight", animations["HumanPlayerWalkingRight"])
+            .AddState("HumanPlayerWalkingLeft", animations["HumanPlayerWalkingLeft"])
+            .AddState("HumanPlayerWalkingUp", animations["HumanPlayerWalkingUp"])
+            .AddState("HumanPlayerWalkingDown", animations["HumanPlayerWalkingDown"])
+            .SetInitialState("AnyState")
+            .AddTransition("AnyState", "HumanPlayerWalkingRight")
+            .AddBoolConditionTo("AnyState", "HumanPlayerWalkingRight", true)
+            .AddTransition("AnyState", "HumanPlayerWalkingLeft")
+            .AddBoolConditionTo("AnyState", "HumanPlayerWalkingLeft", true)
+            .AddTransition("AnyState", "HumanPlayerWalkingUp")
+            .AddBoolConditionTo("AnyState", "HumanPlayerWalkingUp", true)
+            .AddTransition("AnyState", "HumanPlayerWalkingDown")
+            .AddBoolConditionTo("AnyState", "HumanPlayerWalkingDown", true)
+            .AddTransition("HumanPlayerWalkingRight", "AnyState")
+            .AddBoolConditionTo("HumanPlayerWalkingRight", "AnyState", false)
+            .AddTransition("HumanPlayerWalkingLeft", "AnyState")
+            .AddBoolConditionTo("HumanPlayerWalkingLeft", "AnyState", false)
+            .AddTransition("HumanPlayerWalkingUp", "AnyState")
+            .AddBoolConditionTo("HumanPlayerWalkingUp", "AnyState", false)
+            .AddTransition("HumanPlayerWalkingDown", "AnyState")
+            .AddBoolConditionTo("HumanPlayerWalkingDown", "AnyState", false)
+            /*.AddTransition("Run", "Idle")
+            .AddBoolConditionTo("Run", "IsMoving", false)*/
+            .Build();
+    }
+
+     private AnimationGraph BuildBotAnimationGraph()
+     {
+         return BuildPlayerAnimationGraph();
+     }
 }

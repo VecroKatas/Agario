@@ -44,11 +44,13 @@ public class GameObject
         return _components.ContainsKey(typeof(T));
     }
 
-    public void AddComponent<T>(T component) where T : IComponent
+    public T AddComponent<T>(T component) where T : IComponent
     {
         _components[typeof(T)] = component;
         
         component.SetParentGameObject(this);
+
+        return component;
     }
     
     public bool RemoveComponent<T>() where T : IComponent
