@@ -51,23 +51,14 @@ public class PlayerFactory
         GameObject newGameObject = new GameObject(circle);
         newGameObject.AddComponent(new PlayerGameObject(_agarioGame, newGameObject));
         
-        /*if (controller.GetType() == typeof(HumanController))
-        {
-            newGameObject.AddComponent(new HumanPlayerAnimator() as AnimatorBase);
-        }
-        else
-        {
-            newGameObject.AddComponent(new BotPlayerAnimator() as AnimatorBase);
-        }*/
-        
-        var animator = newGameObject.AddComponent(new HumanPlayerAnimator() as AnimatorBase);
-        //animator.Setup(BuildPlayerAnimationGraph());
         if (controller.GetType() == typeof(HumanController))
         {
+            var animator = newGameObject.AddComponent(new HumanPlayerAnimator() as AnimatorBase);
             animator.Setup(BuildPlayerAnimationGraph());
         }
         else
         {
+            var animator = newGameObject.AddComponent(new BotPlayerAnimator() as AnimatorBase);
             animator.Setup(BuildBotAnimationGraph());
         }
         
@@ -109,6 +100,10 @@ public class PlayerFactory
             .AddState("HumanPlayerWalkingLeft", animations["HumanPlayerWalkingLeft"])
             .AddState("HumanPlayerWalkingUp", animations["HumanPlayerWalkingUp"])
             .AddState("HumanPlayerWalkingDown", animations["HumanPlayerWalkingDown"])
+            .AddState("HumanPlayerEatingRight", animations["HumanPlayerEatingRight"])
+            .AddState("HumanPlayerEatingLeft", animations["HumanPlayerEatingLeft"])
+            .AddState("HumanPlayerEatingUp", animations["HumanPlayerEatingUp"])
+            .AddState("HumanPlayerEatingDown", animations["HumanPlayerEatingDown"])
             .SetInitialState("AnyState")
             .AddTransition("AnyState", "HumanPlayerWalkingRight")
             .AddBoolConditionTo("AnyState", "HumanPlayerWalkingRight", true)
@@ -126,8 +121,22 @@ public class PlayerFactory
             .AddBoolConditionTo("HumanPlayerWalkingUp", "AnyState", false)
             .AddTransition("HumanPlayerWalkingDown", "AnyState")
             .AddBoolConditionTo("HumanPlayerWalkingDown", "AnyState", false)
-            /*.AddTransition("Run", "Idle")
-            .AddBoolConditionTo("Run", "IsMoving", false)*/
+            .AddTransition("AnyState", "HumanPlayerEatingRight")
+            .AddBoolConditionTo("AnyState", "HumanPlayerEatingRight", true)
+            .AddTransition("AnyState", "HumanPlayerEatingLeft")
+            .AddBoolConditionTo("AnyState", "HumanPlayerEatingLeft", true)
+            .AddTransition("AnyState", "HumanPlayerEatingUp")
+            .AddBoolConditionTo("AnyState", "HumanPlayerEatingUp", true)
+            .AddTransition("AnyState", "HumanPlayerEatingDown")
+            .AddBoolConditionTo("AnyState", "HumanPlayerEatingDown", true)
+            .AddTransition("HumanPlayerEatingRight", "AnyState")
+            .AddBoolConditionTo("HumanPlayerEatingRight", "AnyState", false)
+            .AddTransition("HumanPlayerEatingLeft", "AnyState")
+            .AddBoolConditionTo("HumanPlayerEatingLeft", "AnyState", false)
+            .AddTransition("HumanPlayerEatingUp", "AnyState")
+            .AddBoolConditionTo("HumanPlayerEatingUp", "AnyState", false)
+            .AddTransition("HumanPlayerEatingDown", "AnyState")
+            .AddBoolConditionTo("HumanPlayerEatingDown", "AnyState", false)
             .Build();
     }
 

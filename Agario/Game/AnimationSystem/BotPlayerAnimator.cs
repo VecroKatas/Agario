@@ -17,10 +17,6 @@ public class BotPlayerAnimator : AnimatorBase
                 base.Play("HumanPlayerWalkingRight");
             else if (MathF.Abs(direction.Y) <= MathF.Abs(direction.X) && direction.X < 0)
                 base.Play("HumanPlayerWalkingLeft");
-            /*if (!_animationNotFinished)
-            {
-                
-            }*/
         }
         else if (name == "BotPlayerEating")
         {
