@@ -56,8 +56,13 @@ public class GameCycle
     {
         if (_objectsToUpdate.Contains(obj))
             return;
-        
+
         _objectsToUpdate.Add(obj);
+    }
+
+    public void UnregisterObjectToUpdate(IUpdatable obj)
+    {
+        _objectsToUpdate.Remove(obj);
     }
     
     public void RegisterObjectToPhysicsUpdate(IPhysicsUpdatable obj)

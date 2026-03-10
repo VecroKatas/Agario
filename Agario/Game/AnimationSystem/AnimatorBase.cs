@@ -75,4 +75,9 @@ public class AnimatorBase : IComponent, IUpdatable
     {
         SetBoolParameter(name, false);
     }
+
+    public void Unregister()
+    {
+        GameCycle.GetInstance().UnregisterObjectToUpdate(this);
+    }
 }

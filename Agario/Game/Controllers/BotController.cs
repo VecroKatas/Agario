@@ -29,7 +29,10 @@ public class BotController : Controller, IUpdatable
         
         
         if (_animator != null)
-            _animator.SetParentGameObject(TargetGameObject);
+        {
+            _animator.Unregister();
+            _animator = null;
+        }
     }
 
     public override void DestroyTargetGameObject()

@@ -29,4 +29,9 @@ public class Animation
     {
         SetFrame(Info.StartFrame + currentFrame);
     }
+
+    public Animation Clone()
+    {
+        return new Animation(new Sprite(Sprite.Texture), Info);
+    }
 }

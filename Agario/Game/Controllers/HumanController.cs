@@ -33,11 +33,14 @@ public class HumanController : PlayerController, IUpdatable
         base.SetTargetGameObject(gameObject);
         
         PlayerGameObject = TargetGameObject.GetComponent<PlayerGameObject>();
-        PlayerGameObject.SizeIncreased += (other) => EatOther(other);
+        PlayerGameObject.SizeIncreased = (other) => EatOther(other);
         TargetGameObject.GetComponent<Food>().OnBeingEaten += DestroyTargetGameObject;
-        
+
         if (_animator != null)
-            _animator.SetParentGameObject(TargetGameObject);
+        {
+            _animator.Unregister();
+            _animator = null;
+        }
     }
 
     public override void DestroyTargetGameObject()
