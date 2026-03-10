@@ -7,7 +7,7 @@ namespace Agario.Infrastructure;
 public class Camera
 {
     private static readonly FloatRect DEFAULT_VIEW_PARAMS =
-        new FloatRect(GameCycle.GetInstance().GetScreenCenter().X / 2, GameCycle.GetInstance().GetScreenCenter().Y / 2, GameConfig.RenderWindowWidth, GameConfig.RenderWindowHeight);
+        new FloatRect(GameCycle.GetInstance().GetScreenCenter().X / 2, GameCycle.GetInstance().GetScreenCenter().Y / 2, GameConfig.RenderWindowWidth * 0.6f, GameConfig.RenderWindowHeight * 0.6f);
     
     public View View { get; private set; }
     public GameObject? FocusObject { get; set; }
